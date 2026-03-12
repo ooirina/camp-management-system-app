@@ -10,7 +10,8 @@ import ro.licenta.taberemanager.repository.InscriereRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
-@Controller
+@CrossOrigin(origins = "http://localhost:3000")
+@RestController
 @RequestMapping("/inscrieri")
 public class InscriereController {
 
@@ -39,21 +40,23 @@ public class InscriereController {
         return repository.findAll(pageable);
     }
 
-    @PostMapping
+    //creare
+    @PostMapping("/creare")
     @ResponseBody
     public Inscriere createRegistration(@Valid @RequestBody  Inscriere inscriere)
     {
         return repository.save(inscriere);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/stergere/{id}")
     @ResponseBody
     public void deleteRegistration(@PathVariable Long id)
     {
         repository.deleteById(id);
     }
+
     //actualizare inscriere
-    @PutMapping("/{id}")
+    @PutMapping("/actualizare/{id}")
     public Inscriere updateRegistration(@PathVariable Long id, @Valid @RequestBody Inscriere updatedRegistration){
         return repository.findById(id)
                 .map(registration->{

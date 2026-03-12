@@ -9,7 +9,9 @@ import ro.licenta.taberemanager.model.Participant;
 import ro.licenta.taberemanager.repository.ParticipantRepository;
 import ro.licenta.taberemanager.service.ParticipantService;
 
-@Controller
+import java.util.List;
+@CrossOrigin(origins = "http://localhost:3000")
+@RestController
 @RequestMapping("/participanti")
 
 public class ParticipantController {
@@ -22,9 +24,8 @@ public class ParticipantController {
     }
     //Lista cu toti participantii
     @GetMapping("/lista")
-    public String showParticipants(Model model){
-        model.addAttribute("listaParticipanti", repository.findAll());
-        return "participanti";
+    public List<Participant> showParticipants(){
+       return repository.findAll();
     }
 
     //Cautare participant dupa id

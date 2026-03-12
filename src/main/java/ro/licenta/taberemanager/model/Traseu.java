@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Data@NoArgsConstructor
-@Table(name="Traseu")
+@Table(name="traseu")
 public class Traseu {
     @Id
     //decimal(3,0) ->Long/Integer

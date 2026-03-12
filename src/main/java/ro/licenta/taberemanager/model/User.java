@@ -4,10 +4,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
+
 
 @Entity
 @Data
-@Table(name="utilizatori")
+@Table(name="user")
 @NoArgsConstructor
 public class User
 {
@@ -19,6 +21,7 @@ public class User
     @NotNull
     private String parola;
     @NotNull
-    private int idRol;
+    @Column(name="id_rol")
+    private BigDecimal idRol;
 
 }

@@ -8,7 +8,8 @@ import ro.licenta.taberemanager.repository.TraseuRepository;
 import org.springframework.ui.Model;
 import org.springframework.data.domain.Pageable;
 import java.util.List;
-@Controller
+@CrossOrigin(origins = "http://localhost:3000")
+@RestController
 @RequestMapping("/trasee")
 
 public class TraseuController {
@@ -36,4 +37,22 @@ public TraseuController(TraseuRepository repository){
 {
     repository.deleteById(id);
 }
+
+@PutMapping("/actualizare/{id}")
+@ResponseBody
+public Traseu updateTrail(@PathVariable Long id, @Valid @RequestBody Traseu updatedTrail){
+    return repository.findById(id)
+    .map(trail->{
+        trail.setDescriere(updatedTrail.getDescriere());
+        trail.setNume(updatedTrail.getNume());
+        trail.setDificultate(updatedTrail.getDificultate());
+        trail.setDistantaKm(updatedTrail.getDistantaKm());
+        trail.setDurataOre(updatedTrail.getDurataOre());
+       return repository.save(trail);
+    })
+            .orElseThrow(()->new RuntimeException("Traseul nu a fost gasit."));
 }
+
+}
+
+

@@ -9,8 +9,10 @@ import ro.licenta.taberemanager.model.Activitate;
 import ro.licenta.taberemanager.repository.ActivitateRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.List;
 
-@Controller
+@CrossOrigin(origins = "http://localhost:3000")
+@RestController
 @RequestMapping("/activitati")
 public class ActivitateController {
     
@@ -22,10 +24,17 @@ public class ActivitateController {
     }
     //Lista cu toti Activitateii
     @GetMapping("/lista")
-    public String showActivites(Model model){
-        model.addAttribute("listaActivitati", repository.findAll());
-        return "activitati";
+    public List<Activitate> showActivites(){
+        return repository.findAll();
     }
+
+    @PostMapping("/creare")
+    @ResponseBody
+    public Activitate createActivity(@Valid @RequestBody  Activitate activitate)
+    {
+        return repository.save(activitate);
+    }
+
 
     //Cautare Activitate dupa id
     @GetMapping("/{id}")
@@ -42,7 +51,7 @@ public class ActivitateController {
     }
 
     //Actualizare date Activitate
-    @PutMapping("/{id}")
+    @PutMapping("/actualizare/{id}")
     @ResponseBody
     public Activitate updateActivitate(@PathVariable Long id, @Valid @RequestBody Activitate updatedActivitate){
         return repository.findById(id)
@@ -61,7 +70,7 @@ public class ActivitateController {
                 .orElseThrow(()->new RuntimeException("Particiant nu a fost gasit"));
 
     }
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/stergere/{id}")
     @ResponseBody
     public void deleteActivitate (@PathVariable Long id){
         repository.deleteById(id);

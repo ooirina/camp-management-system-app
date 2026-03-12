@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import  lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotNull;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 
@@ -19,24 +21,25 @@ public class Tabara {
     @NotNull
     private String nume;
     @NotNull
+    @Column(name="locatia")
     private String locatie;
     @NotNull
     @Column(name="data_inceput")
-    private Date dataInceput;
+    private LocalDate dataInceput;
     @NotNull
     @Column(name="data_sfarsit")
-    private Date dataSfarsit;
+    private LocalDate dataSfarsit;
     @NotNull
-    private Long capacitate;
+    private BigDecimal capacitate;
     @NotNull
-    private Long pret;
+    private BigDecimal pret;
     @NotNull
     @Column(name="varsta_min")
-    private Long varstaMin;
+    private BigDecimal varstaMin;
     @NotNull
     @Column(name="varsta_max")
-    private Long varstaMax;
+    private BigDecimal varstaMax;
     @NotNull
     @Column(name="tip_public")
-    private Long tipPublic;
+    private String tipPublic;
 }

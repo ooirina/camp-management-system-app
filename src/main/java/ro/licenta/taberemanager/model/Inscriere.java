@@ -22,24 +22,24 @@ public class Inscriere {
     private Long id;
     @NotNull
     @Column(name="data_inscriere")
-    private Date dataInscriere;
+    private LocalDate dataInscriere;
     @NotNull
     private String statut;
     @NotNull
-    private Long suma;
+    private BigDecimal suma;
     @NotNull
     @Column(name="data_plata")
-    private Date dataPlata;
+    private LocalDate dataPlata;
     @NotNull
     @Column(name="status_plata")
     private String statusPlata;
     @NotNull
     @Column(name="id_tabara")
-    private Long idTabara;
+    private BigDecimal idTabara;
     @NotNull
     @Column(name="id_participant")
-    private Long idParticipant;
+    private BigDecimal idParticipant;
     @NotNull
     @Column(name="id_platitor")
-    private Long idPlatitor;
+    private BigDecimal idPlatitor;
 }

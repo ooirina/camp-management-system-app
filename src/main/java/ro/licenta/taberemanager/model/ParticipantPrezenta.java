@@ -21,9 +21,9 @@ private Long id;
     private String observatii;
 @NotNull
 @Column(name="id_activitate")
-    private Long idActivitate;
+    private BigDecimal idActivitate;
 @NotNull
     @Column(name="id_participant")
-    private Long idParticipant;
+    private BigDecimal idParticipant;
 
 }

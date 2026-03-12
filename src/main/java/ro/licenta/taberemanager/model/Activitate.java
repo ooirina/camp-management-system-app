@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.util.Date;
 
 @Entity
@@ -18,21 +19,21 @@ public class Activitate {
     @NotNull
     private String nume;
     @NotNull
-    private Data data;
+    private LocalDate data;
     @NotNull
     private String descriere;
     @NotNull
     @Column(name = "ora_inceput")
-    private Date oraInceput;
+    private LocalTime oraInceput;
     @NotNull
     @Column(name = "ora_sfarsit")
-    private Date oraSfarsit;
+    private LocalTime oraSfarsit;
     @NotNull
     private String locatie;
     @NotNull
     @Column(name="capacitate_maxima")
-    private Long capacitateMax;
+    private BigDecimal capacitateMax;
     @NotNull
     @Column(name="id_tabara")
-    private Long idTabara;
+    private BigDecimal idTabara;
 }

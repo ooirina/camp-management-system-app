@@ -9,7 +9,9 @@ import ro.licenta.taberemanager.model.Tabara;
 import ro.licenta.taberemanager.repository.TabaraRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Controller
+import java.util.List;
+@CrossOrigin(origins ="http://localhost:3000")
+@RestController
 @RequestMapping("/tabere")
 public class TabaraController {
 
@@ -20,16 +22,15 @@ public class TabaraController {
 
     }
     //creare tabara
-    @PostMapping
+    @PostMapping("/creare")
     public Tabara createCamp(@Valid  @RequestBody Tabara tabara){
         return repository.save(tabara);
     }
 
     //Lista cu toate taberele
     @GetMapping("/lista")
-    public String showCamps(Model model){
-        model.addAttribute("listaTabere", repository.findAll());
-        return "tabere";
+    public List<Tabara> showCamps(){
+       return repository.findAll();
     }
 
     //Cautare tabara dupa id
@@ -47,7 +48,7 @@ public class TabaraController {
     }
 
     //Actualizare date tabara
-    @PutMapping("/{id}")
+    @PutMapping("actualizare/{id}")
     @ResponseBody
     public Tabara updateCamp(@PathVariable Long id, @Valid @RequestBody Tabara updatedCamp){
         return repository.findById(id)
@@ -67,7 +68,7 @@ public class TabaraController {
                 .orElseThrow(()->new RuntimeException("Particiant nu a fost gasit"));
 
     }
-    @DeleteMapping("/{id}")
+    @DeleteMapping("stergere/{id}")
     @ResponseBody
     public void deleteCamp (@PathVariable Long id){
         repository.deleteById(id);

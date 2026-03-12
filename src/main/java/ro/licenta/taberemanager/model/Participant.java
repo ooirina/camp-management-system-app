@@ -3,13 +3,15 @@ import jakarta.persistence.*;
 import  lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotNull;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name="Participant")
+@Table(name="participant")
 
 public class Participant {
     @Id
@@ -30,9 +32,9 @@ public class Participant {
     @Column(name="contact_urgenta")
     private String contactUrgenta;
     @Column(name="id_user")
-    private Long idUser;
+    private BigDecimal idUser;
     @Column(name="id_parinte")
-    private String idParinte;
+    private BigDecimal idParinte;
   //  private String numeGrup;
 
 }

@@ -8,7 +8,9 @@ import ro.licenta.taberemanager.repository.UserRepository;
 import org.springframework.ui.Model;
 import org.springframework.data.domain.Pageable;
 
-@Controller
+import java.util.List;
+@CrossOrigin(origins = "http://localhost:3000")
+@RestController
 @RequestMapping("/utilizatori")
 public class UserController {
     private final UserRepository repository;
@@ -20,9 +22,8 @@ public class UserController {
 
 //Lista cu toti utilizatorii
     @GetMapping("/lista")
-    public String showUsers(Model model){
-        model.addAttribute("listaUtilizatori", repository.findAll());
-        return "utilizatori";
+    public List<User> showUsers(){
+      return repository.findAll();
     }
     /*
     @GetMapping
@@ -41,13 +42,13 @@ public Page<User> getUsers(Pageable pageable){
     return repository.findAll(pageable);
 }
 //Se adauga un utilizator respectand regulile de validare din clasa USer
-    @PostMapping
+    @PostMapping("/creare")
     public User createUser(@Valid  @RequestBody User user){
         return repository.save(user);
     }
 
     //Actualizare un utilizator
-    @PutMapping("/{id}")
+    @PutMapping("/actualizare/{id}")
     public User updateUser(@PathVariable Long id, @Valid @RequestBody User updatedUser){
          return repository.findById(id)
                  .map(user->{
@@ -59,7 +60,7 @@ public Page<User> getUsers(Pageable pageable){
                  .orElseThrow(()-> new RuntimeException("Utilizatorul nu a fost gasit"));
     }
 /// Stergere utilizator
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/stergere/{id}")
     public void deleteUser(@PathVariable Long id)
     {
         repository.deleteById(id);
