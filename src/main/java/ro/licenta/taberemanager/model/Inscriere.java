@@ -8,7 +8,7 @@ import  lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.math.BigDecimal;
+
 import java.util.Date;
 
 @Entity
@@ -19,6 +19,7 @@ import java.util.Date;
 public class Inscriere {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotNull
     @Column(name="data_inscriere")
@@ -26,7 +27,7 @@ public class Inscriere {
     @NotNull
     private String statut;
     @NotNull
-    private BigDecimal suma;
+    private Long suma;
     @NotNull
     @Column(name="data_plata")
     private LocalDate dataPlata;
@@ -35,11 +36,11 @@ public class Inscriere {
     private String statusPlata;
     @NotNull
     @Column(name="id_tabara")
-    private BigDecimal idTabara;
+    private Long idTabara;
     @NotNull
     @Column(name="id_participant")
-    private BigDecimal idParticipant;
+    private Long idParticipant;
     @NotNull
     @Column(name="id_platitor")
-    private BigDecimal idPlatitor;
+    private Long idPlatitor;
 }

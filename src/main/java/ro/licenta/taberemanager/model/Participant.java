@@ -4,7 +4,6 @@ import  lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotNull;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 
@@ -15,7 +14,7 @@ import java.time.LocalDate;
 
 public class Participant {
     @Id
-    //@GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private  Long id;
     @NotNull
     private String nume;
@@ -32,9 +31,9 @@ public class Participant {
     @Column(name="contact_urgenta")
     private String contactUrgenta;
     @Column(name="id_user")
-    private BigDecimal idUser;
+    private Long idUser;
     @Column(name="id_parinte")
-    private BigDecimal idParinte;
+    private Long idParinte;
   //  private String numeGrup;
 
 }

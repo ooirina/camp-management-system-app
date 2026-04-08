@@ -5,10 +5,42 @@ baseURL:API_BASE_URL,
 headers:{'Content-Type':'application/json'
 }
 });
+//interceptor token jwt in fiecare cerere
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token'); // Numele sub care salvăm token-ul la login
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+///verifica erorile la response
+api.interceptors.response.use(
+(response)=>{
+return response;//daca e ok 200 returneaza datwele normal
+},
+(error)=>{
+if(error.response && error.response.status ===401){
+localStorage.removeItem('token');
+localStorage.removeItem('userEmail');
+localStorage.removeItem('userRole');
+//informare utilizator ca s-a delogat ca s-a terminat sesiunea
+alert("Sesiunea a expirat. Te rugăm să te loghezi din nou pentru a continua înscrierea. ")
+window.location.href='/login';
+
+}
+return Promise.reject(error);
+}
+
+);
 
 //servicii tabere
 
-export const campService={
+export const CampService={
 getAll:()=>api.get('/tabere/lista'),
 getById:(id)=>api.get('/tabere/${id}'),
 create: (tabara)=> api.post('/tabere/creare',tabara),
@@ -69,5 +101,22 @@ create: (user)=> api.post('/utilizatori/creare', user),
 update:(id,updatedUser)=>api.put('/utilizatori/actualizare/${id}',updatedUser),
 delete:(id)=>api.delete('/utilizatori/stergere/${id}')
 };
+
+//servicii autenificare
+export const AuthService={
+login: async(credentials)=>{
+const response= await api.post('/autentificare/login',credentials);
+if(response.data.jwt){
+localStorage.setItem('token',response.data.jwt);//salvare token
+}
+return response.data;
+},
+logout:()=>{
+localStorage.removeItem('token');
+window.location.href='/login';
+},
+register: (userData) => api.post('/autentificare/register', userData)
+};
+
 export default api;
 

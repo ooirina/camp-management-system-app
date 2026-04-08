@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { campService } from '../services/api';
+import { CampService } from '../services/api';
 import { Link } from 'react-router-dom';
 
 const CampList = () => {
@@ -10,7 +10,7 @@ const CampList = () => {
     useEffect(() => {
         const fetchCamps = async () => {
             try {
-                const response = await campService.getAll(); // se apeleaza /tabere/lista
+                const response = await CampService.getAll(); // se apeleaza /tabere/lista
                 setCamps(response.data);
                 setLoading(false);
             } catch (err) {
@@ -24,7 +24,7 @@ const CampList = () => {
     const handleDelete = async (id) => {
         if (window.confirm("Sigur vrei sa stergi aceasta tabara?")) {
             try {
-                await campService.delete(id);
+                await CampService.delete(id);
                 // se actualizeaza lista pe ecran dupa stergere
                 setCamps(camps.filter(camp => camp.id !== id));
             } catch (err) {
