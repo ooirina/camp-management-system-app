@@ -1,7 +1,18 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, {useState} from 'react';
+import {Link, useNavigate} from 'react-router-dom';
+
 
 const Navbar = () => {
+const [showLoginMenu,setShowLoginMenu]=useState(false);
+const token = localStorage.getItem('token');
+const navigate =useNavigate();
+const userEmail=localStorage.getItem('userEmail');
+
+const handleLogout=()=>{
+  localStorage.clear();
+  navigate('login');
+  window.location.reload();
+};
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
       <div className="container">
@@ -30,6 +41,47 @@ const Navbar = () => {
                 ➕ Înscriere Nouă
               </Link>
             </li>
+
+            {!token?(
+            <li className="nav-item dropdown ms-lg-3">
+              <button className="btn btn-primary btn-sm dropdown-toggle" type="button" onClick={() => setShowLoginMenu(!showLoginMenu)} aria-expanded={showLoginMenu}>
+                 Logare
+              </button>
+
+         {/*  meniu la login care coboara cu cele 2 optiuni */}
+               <ul className={`dropdown-menu dropdown-menu-end shadow ${showLoginMenu ? 'show' : ''}`}
+                                 style={{ position: 'absolute', right: 0 }}>
+                               <li>
+                                 <Link className="dropdown-item py-2" to="/login" onClick={() => setShowLoginMenu(false)}>
+                                   <strong>Logare in User Hub</strong><br/>
+                                   <small className="text-muted">Pentru participanți și părinți</small>
+                                 </Link>
+                               </li>
+                               <li><hr className="dropdown-divider" /></li>
+                               <li>
+                                 <Link className="dropdown-item py-2" to="/admin-login" onClick={() => setShowLoginMenu(false)}>
+                                   <span className="text-danger fw-bold">Logare in Admin Hub</span><br/>
+                                   <small className="text-muted">Pentru coordonatori si admin</small>
+                                 </Link>
+                               </li>
+                             </ul>
+                           </li>
+
+                           ):(
+                           <>
+                          <li className="nav-item ms-lg-4">
+                          <Link className="nav-link active fw-bold text-info" to="/profile">
+                          Profilul meu
+                          </Link>
+                          </li>
+                          <li className="nav-item ms-lg-2">
+                                <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
+                            Logout
+                                </button>
+                        </li>
+                        </>
+                      )}
+
           </ul>
         </div>
       </div>

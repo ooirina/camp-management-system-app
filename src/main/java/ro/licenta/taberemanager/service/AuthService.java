@@ -21,15 +21,29 @@ public class AuthService {
     @Autowired
     UserServiceInterface userServiceInterface;
 
-    public LoginResponse login(LoginRequest request){
+    public LoginResponse login(LoginRequest request, String loginType){
         /// 1 cautare utilizator dupa email
         User user= userRepository.findByEmail(request.getEmail())
-                .orElseThrow(()-> new RuntimeException("Utilizator negăsit!"));
+                .orElseThrow(()-> new RuntimeException("Email sau parolă incorectă!"));
         //2 verificare parola trimisa necriptata se potriveste cu cea din bd
         if(!passwordEncoder.matches(request.getParola(), user.getParola()))
         {
-            throw  new RuntimeException("Parolă incorectă!");
+            throw  new RuntimeException("Email sau parolă incorectă!");
         }
+        //luare id ul rolului din obiectul user
+        int roleId= user.getIdRol().intValue();
+
+        //daca e la logare de admin, dar are id ul de user sau altceva- se refuza
+       if("ADMIN".equals(loginType)&& roleId!=1)
+       {
+           throw new RuntimeException("Acces interzis:Acest cont nu are drepturi de administrator.");
+       }
+  // daca  e la pagina de user, dar are id de admin
+       if("USER".equals(loginType)&& roleId ==1)
+       {
+           throw new RuntimeException("Acces interzis: Administratorii trebuie să folosească portalul dedicat.");
+       }
+
         //3. genereaza token ul jwt
 
         String jwt= jwtService.generateToken(user.getEmail());

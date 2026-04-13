@@ -12,6 +12,8 @@ import ParticipantList from './components/ParticipantList';
 import LoginPage from './components/auth/LoginPage';
 import Dashboard from './components/Dashboard';
 import RegisterPage from './components/auth/RegisterPage';
+import  AdminLoginPage from './components/auth/AdminLoginPage'
+import Profile from './components/Profile';
 
 function App() {
   // OBSERVAȚIE: Am șters useEffect și axios de aici!
@@ -27,12 +29,19 @@ function App() {
 
         <Routes>
         {/* Dacă ești logat, mergi la Dashboard. Dacă nu, mergi la Login */}
-        <Route path="/" element ={isAuthenticated ?<Navigate to="/dashboard" /> : <Navigate to ="/login" />}/>
-          {/* 3. Când utilizatorul accesează adresa "/", afișăm tabelul din CampList */}
-         <Route path="/login" element={<LoginPage />} />
-         {/* Protejăm ruta de Dashboard */}
-         <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
+       //<Route path="/" element ={isAuthenticated ?<Navigate to="/dashboard" /> : <Navigate to ="/login" />}/>
 
+
+         //oricine poate accesa pagina principala
+         <Route path="/dashboard" element={<Dashboard />}/>
+
+          {/* Protejăm ruta de Profil */}
+         <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
+
+
+         ///Rute publice
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/admin-login" element={<AdminLoginPage />} />
           <Route path="/tabere" element={<CampList />}/>
           <Route path="/activitati" element={<ActivityList />} />
            <Route path="/utilizatori" element={<UserList />} />
@@ -40,6 +49,7 @@ function App() {
            <Route path="/inscrieri/nou" element={<AddRegistration />} />
            <Route path="/participanti"element={<ParticipantList />} />
            <Route path="/register" element={<RegisterPage />} />
+
         </Routes>
       </div>
     </Router>

@@ -8,11 +8,12 @@ function LoginPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-         const loginCredentials = {
-                 email: email,
-                 parola: parola,
-                 loginType: "USER"
-             };
+
+        const loginCredentials={
+        email:email,
+        parola:parola,
+        loginType:"ADMIN"
+        };
 
         try {
             // Trimitem datele la Java prin  AuthService.login
@@ -21,17 +22,12 @@ function LoginPage() {
                 localStorage.setItem('userEmail', email);
                 localStorage.setItem('token', data.jwt);//salvare token daca nu e deja salvat in Autoservice
                 localStorage.setItem('userRole', data.role);// rolul pe care il are deja in bd
-                navigate('/dashboard'); // Dacă e OK, mergem la pagina principală
+                navigate('/admin-dashboard'); // Dacă e OK, mergem la pagina principală
                 window.location.reload();
             }
         } catch (err) {
             alert("Date de logare incorecte!");
         }
-    };
-
-    ///functia pentru logare google
-    const handleGoogleLogin=()=>{
-       window.location.href="http://localhost:8080/oauth2/authorization/google";
     };
 
     return (
@@ -54,17 +50,9 @@ function LoginPage() {
            </p>
 
            <hr />
-             {/*/buton Google  comentariu in jsx*/}
-             <div className="text-center mb-3">
-             <button type="button" onClick={handleGoogleLogin} className="btn btn-outline-dark style={{ borderRadius: '8px', fontWeight: '500' }}" >
-               <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" style={{ width: '18px', marginRight: '10px' }} />
-                                           Continuă cu Google
-              </button>
-            </div>
-
            <div className="text-center mt-3">
               <p className="mb-0" style={{ fontSize: '0.85rem', color: '#666' }}>
-              Ești administrator?
+           Ești administrator?
                </p>
                <span
                    className="badge bg-danger" style={{ cursor: 'pointer', padding: '8px 12px' }} onClick={() => alert("Pagina de administrator va fi disponibilă în curând!")}>
