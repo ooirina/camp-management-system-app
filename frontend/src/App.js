@@ -14,6 +14,9 @@ import Dashboard from './components/Dashboard';
 import RegisterPage from './components/auth/RegisterPage';
 import  AdminLoginPage from './components/auth/AdminLoginPage'
 import Profile from './components/Profile';
+import CampDetails from './components/CampDetails';
+
+
 
 function App() {
   // OBSERVAȚIE: Am șters useEffect și axios de aici!
@@ -49,7 +52,8 @@ function App() {
            <Route path="/inscrieri/nou" element={<AddRegistration />} />
            <Route path="/participanti"element={<ParticipantList />} />
            <Route path="/register" element={<RegisterPage />} />
-
+           <Route path="/camp-details/:id" element={<CampDetails />}/>
+           <Route path="/add-registration" element={<AddRegistration />}/>
         </Routes>
       </div>
     </Router>

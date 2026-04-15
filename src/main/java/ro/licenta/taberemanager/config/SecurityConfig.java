@@ -42,7 +42,7 @@ public class SecurityConfig {
               //  .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/autentificare/**","/login/**","/oauth2/**").permitAll()
+                        .requestMatchers("/autentificare/**","/login/**","/oauth2/**","/tabere/lista","/tabere/**").permitAll()
                         .anyRequest().authenticated() // PERMITEM TOT (provizoriu, pentru licență)
 
 

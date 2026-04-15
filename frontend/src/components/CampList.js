@@ -1,83 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { CampService } from '../services/api';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-const CampList = () => {
-    const [camps, setCamps] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+function CampList() {
+    const [tabere, setTabere] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchCamps = async () => {
-            try {
-                const response = await CampService.getAll(); // se apeleaza /tabere/lista
-                setCamps(response.data);
-                setLoading(false);
-            } catch (err) {
-                setError('Eroare la incarcarea taberelor!');
-                setLoading(false);
-            }
-        };
-        fetchCamps();
+        axios.get('http://localhost:8080/tabere/lista') // Ajustează URL-ul tău
+            .then(res => setTabere(res.data))
+            .catch(err => console.error(err));
     }, []);
-
-    const handleDelete = async (id) => {
-        if (window.confirm("Sigur vrei sa stergi aceasta tabara?")) {
-            try {
-                await CampService.delete(id);
-                // se actualizeaza lista pe ecran dupa stergere
-                setCamps(camps.filter(camp => camp.id !== id));
-            } catch (err) {
-                alert("Nu s-a putut sterge tabara!");
-            }
-        }
-    };
-
-    if (loading) return <div className="text-center mt-5">Se incarca taberele</div>;
-    if (error) return <div className="alert alert-danger">{error}</div>;
 
     return (
         <div className="container mt-4">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2>⛺ Lista Tabere</h2>
-                <Link to="/tabere/new" className="btn btn-success">
-                    Adaugă Tabără Nouă
-                </Link>
+            <h2 className="text-center mb-4">Tabere Disponibile</h2>
+            <div className="row">
+                {tabere.map(tabara => (
+                    <div className="col-md-4 mb-4" key={tabara.id}>
+                        <div className="card h-100 shadow-sm">
+                            <img src={tabara.imagine || 'https://via.placeholder.com/300x200'} className="card-img-top" alt={tabara.nume} />
+                            <div className="card-body d-flex flex-column">
+                                <h5 className="card-title">{tabara.nume}</h5>
+                                <p className="card-text text-muted">{tabara.locatie}</p>
+                                <h6 className="text-primary">{tabara.pret} RON</h6>
+                                <button
+                                    className="btn btn-outline-brown mt-auto"
+                                    style={{backgroundColor: '#8B4513', color: 'white'}}
+                                    onClick={() => navigate(`/camp-details/${tabara.id}`)}
+                                >
+                                    Vezi detalii
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
-
-            <table className="table table-hover shadow-sm">
-                <thead className="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Nume</th>
-                        <th>Locație</th>
-                        <th>Capacitate</th>
-                        <th>Acțiuni</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {camps.length === 0 ? (
-                        <tr>
-                            <td colSpan="5" className="text-center">Nu există tabere înregistrate.</td>
-                        </tr>
-                    ) : (
-                        camps.map(tabara => (
-                            <tr key={tabara.id}>
-                                <td>{tabara.id}</td>
-                                <td>{tabara.nume}</td>
-                                <td>{tabara.locatie}</td>
-                                <td>{tabara.capacitate}</td>
-                                <td>
-                                    <Link to={`/tabere/${tabara.id}`} className="btn btn-sm btn-info me-2">Detalii</Link>
-                                    <button onClick={() => handleDelete(tabara.id)} className="btn btn-sm btn-danger">Șterge</button>
-                                </td>
-                            </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
         </div>
     );
-};
+}
 
 export default CampList;

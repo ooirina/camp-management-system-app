@@ -23,6 +23,8 @@ public class Participant {
     @NotNull
     @Column(name="data_nasterii")
     private LocalDate dataNasterii;
+    @NotNull
+    private String telefon;
     @Column(length=1000)
     private String alergii;
 

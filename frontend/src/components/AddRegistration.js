@@ -1,69 +1,135 @@
-import React, { useState, useEffect } from 'react';
-import { CampService, ParticipantService, RegistrationService } from '../services/api';
+import React , {useState, useEffect} from 'react';
+import {useLocation, useNavigate} from 'react-router-dom';
+import axios from 'axios';
 
-const AddRegistration = () => {
-    const [camps, setCamps] = useState([]);
-    const [participants, setParticipants] = useState([]);
-    const [formData, setFormData] = useState({
-        idTabara: '',
-        idParticipant: '',
-        dataInscriere: new Date().toISOString().split('T')[0], // Data de azi
-        statut: 'In asteptare',
-        statusPlata: 'Neachitat',
-        suma: 0,
-        idPlatitor: 1 // Momentan hardcodat până facem login-ul
-    });
+function AddRegistration(){
+const location=useLocation();
+const navigate =useNavigate();
+const queryParams=new URLSearchParams(location.search);
 
-    useEffect(() => {
-        // Încărcăm taberele și copiii pentru a umple listele de selecție (Dropdowns)
-        const loadData = async () => {
-            const campsRes = await CampService.getAll();
-            const partRes = await ParticipantService.getAll();
-            setCamps(campsRes.data);
-            setParticipants(partRes.data);
-        };
-        loadData();
-    }, []);
+//luare datele taberei din URL (trimise de CampDetails)
+const tabaraId=queryParams.get('tabaraId');
+const numeTabara= queryParams.get('numeTabara');
+const pretTabara=queryParams.get('pret');
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await RegistrationService.create(formData);
-            alert("Înscriere realizată cu succes!");
-        } catch (err) {
-            alert("Eroare la înscriere!");
-        }
-    };
 
-    return (
-        <div className="container mt-4 shadow p-4 rounded bg-light">
-            <h3>📝 Înscriere Nouă în Tabără</h3>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label>Selectează Tabăra:</label>
-                    <select className="form-select" onChange={(e) => setFormData({...formData, idTabara: e.target.value})}>
-                        <option value="">--- Alege Tabăra ---</option>
-                        {camps.map(c => <option key={c.id} value={c.id}>{c.nume} - {c.pret} RON</option>)}
-                    </select>
-                </div>
+//datele pt Participant+ datele pentru Inscriere
+const [formData, setFormData]=useState({
+    numeParticipant:'',
+    prenumeParticipant:'',
+    dataNasterii:'',
+    telefon:'',
+    alergii:'',
+    problemeMedicale:'',
+    contactUrgenta:'',
+    emailUtilizator:localStorage.getItem('userEmail'),
+    idTabara: tabaraId,
+    suma:pretTabara|| ''//se completeaza automat pretul taberei
 
-                <div className="mb-3">
-                    <label>Selectează Participantul (Copilul):</label>
-                    <select className="form-select" onChange={(e) => setFormData({...formData, idParticipant: e.target.value})}>
-                        <option value="">--- Alege Copilul ---</option>
-                        {participants.map(p => <option key={p.id} value={p.id}>{p.nume} {p.prenume}</option>)}
-                    </select>
-                </div>
 
-                <div className="mb-3">
-                    <label>Sumă de plată:</label>
-                    <input type="number" className="form-control" onChange={(e) => setFormData({...formData, suma: e.target.value})} />
-                </div>
-
-                <button type="submit" className="btn btn-primary w-100">Confirmă Înscrierea</button>
-            </form>
-        </div>
-    );
+});
+const handleChange=(e)=>{
+   setFormData({...formData,[e.target.name]:e.target.value});
 };
+const handleSubmit=async(e)=>{
+e.preventDefault();
 
+//daca avem id tabara, cerem datele ei de la backend
+try{
+    const token=localStorage.getItem('token');
+    ///trimitere catre metoda "dubla" din java controller
+    await axios.post('http://localhost:8080/inscrieri/save-completa',formData,{
+         headers:{ Authorization:`Bearer ${token}`}
+
+
+    });
+    alert('Înscrierea și Participantul au fost salvați cu succes!');
+    navigate('/inscrieri');
+
+} catch(err){
+console.error(err);
+alert('Eroare la salvare. Verifica consola!');
+}
+
+};
+useEffect(()=>{
+if(tabaraId){
+  axios.get(`http://localhost:8080/tabere/${tabaraId}`)
+    .then(res=>{
+      console.log("Date tabara incarcate:", res.data);
+      //se actualizeaza doar campul suma formData cu pretul din bd
+      setFormData(prev=>({...prev,suma:res.data.pret })
+      );
+  })
+     .catch(err=> console.error("Eroare la preluarea prețului:", err));
+
+}
+
+},[tabaraId]);//se executa doar cand tabaraid e disponivil
+
+
+ return (
+ <div className="container mt-5">
+             <div className="card mx-auto shadow" style={{maxWidth: '600px'}}>
+                 <div className="card-header bg-success text-white">
+                     <h4>Formular Înscriere Tabără: {numeTabara}</h4>
+                 </div>
+                 <div className="card-body">
+                     <form onSubmit={handleSubmit}>
+                         <h5>Date Participant </h5>
+                         <div className="mb-3">
+                             <label className="form-label">Nume </label>
+                             <input type="text" name="numeParticipant" className="form-control" onChange={handleChange} required />
+                         </div>
+                         <div className="mb-3">
+                             <label className="form-label">Prenume </label>
+                             <input type="text" name="prenumeParticipant" className="form-control" onChange={handleChange} required />
+                         </div>
+
+                   <hr />
+                   <h5>Detalii Înscriere </h5>
+                         <div className="row">
+                                 <div className="col-md-6 mb-3">
+                                     <label className="form-label">Data Nașterii</label>
+                                     <input type="date" name="dataNasterii" className="form-control" onChange={handleChange} required />
+                                 </div>
+                         <div className="mb-3">
+                             <label className="form-label">Telefon Contact</label>
+                             <input type="text" name="telefon" className="form-control" onChange={handleChange} required />
+                         </div>
+                         <div className="mb-3">
+                                 <label className="form-label">Alergii (dacă există)</label>
+                                 <textarea name="alergii" className="form-control" rows="2" onChange={handleChange}></textarea>
+                             </div>
+                         <div className="mb-3">
+                                 <label className="form-label">Probleme Medicale / Observații</label>
+                                 <textarea name="problemeMedicale" className="form-control" rows="2" onChange={handleChange}></textarea>
+                             </div>
+                         <div className="col-md-6 mb-3">
+                                     <label className="form-label">Contact Urgență (Nume/Tel)</label>
+                                     <input type="text" name="contactUrgenta" className="form-control" placeholder="exemplu: Mama 07xxxxxxxx" onChange={handleChange} required />
+                                 </div>
+                             </div>
+
+                         <hr />
+                         <h5>Detalii Suplimentare </h5>
+                         <div className="mb-3">
+                             <label className="form-label">Email (Contul tău)</label>
+                             <input type="text" className="form-control" value={formData.emailUtilizator} readOnly />
+                         </div>
+                         <div className="mb-3">
+                             <label className="form-label">Sumă de plată (RON)</label>
+                             <input type="text" className="form-control" value={formData.suma} readOnly />
+                         </div>
+
+                         <button type="submit" className="btn btn-primary w-100">Finalizează Înscrierea</button>
+                     </form>
+                 </div>
+             </div>
+         </div>
+
+ );
+
+
+}
 export default AddRegistration;

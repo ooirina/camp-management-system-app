@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import  lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotNull;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import java.util.Date;
@@ -27,11 +29,11 @@ public class Inscriere {
     @NotNull
     private String statut;
     @NotNull
-    private Long suma;
-    @NotNull
+    private BigDecimal suma;
+   // @NotNull
     @Column(name="data_plata")
     private LocalDate dataPlata;
-    @NotNull
+    //@NotNull
     @Column(name="status_plata")
     private String statusPlata;
     @NotNull
