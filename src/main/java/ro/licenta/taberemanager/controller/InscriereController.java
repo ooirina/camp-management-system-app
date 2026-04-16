@@ -131,5 +131,10 @@ public class InscriereController {
         System.out.println("🚀 SUCCES TOTAL! Înscriere salvată.");
         return salvata;
     }
+    @GetMapping("/istoric/{idPlatitor}")
+    public List<Inscriere> getIstoricUserRegistrations(@PathVariable Long idPlatitor)
+    {
+        return repository.findByIdPlatitorOrderByIdDesc(idPlatitor);
+    }
     
 }

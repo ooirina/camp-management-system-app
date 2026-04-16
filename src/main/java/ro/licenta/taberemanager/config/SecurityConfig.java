@@ -37,12 +37,13 @@ public class SecurityConfig {
                     opt.setAllowedOrigins(List.of("http://localhost:3000")); // Permitem React
                     opt.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
                     opt.setAllowedHeaders(List.of("*"));
+                    opt.setAllowCredentials(true);
                     return opt;
                 }))
               //  .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/autentificare/**","/login/**","/oauth2/**","/tabere/lista","/tabere/**").permitAll()
+                        .requestMatchers("/autentificare/**","/login/**","/oauth2/**","/tabere/**","/activitati/**","/utilizatori/**","/inscrieri/**").permitAll()
                         .anyRequest().authenticated() // PERMITEM TOT (provizoriu, pentru licență)
 
 

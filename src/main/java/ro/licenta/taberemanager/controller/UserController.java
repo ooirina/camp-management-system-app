@@ -1,5 +1,6 @@
 package ro.licenta.taberemanager.controller;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -65,4 +66,12 @@ public Page<User> getUsers(Pageable pageable){
     {
         repository.deleteById(id);
     }
+
+    @GetMapping("/get_id_user")
+    public ResponseEntity<Long> getUserIdByEmail(@RequestParam String email) {
+        return repository.findByEmail(email)
+                .map(user->ResponseEntity.ok(user.getId()))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 }

@@ -67,12 +67,18 @@ public class ActivitateController {
 
                     return repository.save(activitate);
                 })
-                .orElseThrow(()->new RuntimeException("Particiant nu a fost gasit"));
+                .orElseThrow(()->new RuntimeException("Activitatea nu a fost gasita"));
 
     }
     @DeleteMapping("/stergere/{id}")
     @ResponseBody
     public void deleteActivitate (@PathVariable Long id){
         repository.deleteById(id);
+    }
+
+     /// metoda pentru itinerariu tabara
+    @GetMapping("/tabara/{idTabara}")
+    public List<Activitate> getItinerary(@PathVariable Long idTabara) {
+        return repository.findByIdTabaraOrderByDataAsc(idTabara);
     }
 }
