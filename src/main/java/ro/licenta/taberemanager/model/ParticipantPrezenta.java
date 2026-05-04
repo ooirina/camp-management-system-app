@@ -14,16 +14,20 @@ import java.math.BigDecimal;
 @Table(name="participant_prezenta")
 public class ParticipantPrezenta {
 @Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
 private Long id;
 @NotNull
-    private String prezenta;
+private String prezenta;//ca sa rtimita 'nu' catre java , nu null
+@Column(name = "observatii", nullable = true)
+private String observatii="";
 @NotNull
-    private String observatii;
+@ManyToOne
+@JoinColumn(name="id_activitate")
+    private Activitate activitate;
+
 @NotNull
-@Column(name="id_activitate")
-    private BigDecimal idActivitate;
-@NotNull
-    @Column(name="id_participant")
-    private BigDecimal idParticipant;
+@ManyToOne
+@JoinColumn(name="id_inscriere")
+    private Inscriere inscriere;
 
 }

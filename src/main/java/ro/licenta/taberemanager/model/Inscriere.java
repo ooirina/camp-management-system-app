@@ -1,5 +1,6 @@
 package ro.licenta.taberemanager.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 
@@ -36,12 +37,19 @@ public class Inscriere {
     //@NotNull
     @Column(name="status_plata")
     private String statusPlata;
+
     @NotNull
-    @Column(name="id_tabara")
-    private Long idTabara;
+    @ManyToOne
+    @JoinColumn(name="id_tabara")
+    @JsonIgnoreProperties({"inscrieri", "hibernateLazyInitializer", "handler"})
+    private Tabara tabara;
+
     @NotNull
-    @Column(name="id_participant")
-    private Long idParticipant;
+    @ManyToOne
+    @JoinColumn(name="id_participant")
+    @JsonIgnoreProperties({"inscrieri", "hibernateLazyInitializer", "handler"})
+    private Participant participant;
+
     @NotNull
     @Column(name="id_platitor")
     private Long idPlatitor;

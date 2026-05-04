@@ -17,6 +17,7 @@ import java.util.Date;
 
 public class Tabara {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotNull
     private String nume;

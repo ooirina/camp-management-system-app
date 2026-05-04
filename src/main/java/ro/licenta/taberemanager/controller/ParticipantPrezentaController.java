@@ -5,27 +5,95 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import ro.licenta.taberemanager.dto.PrezentaDTO;
 import ro.licenta.taberemanager.model.ParticipantPrezenta;
+import ro.licenta.taberemanager.repository.ActivitateRepository;
+import ro.licenta.taberemanager.repository.InscriereRepository;
 import ro.licenta.taberemanager.repository.ParticipantPrezentaRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
+import java.util.Map;
+
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/participant_prezenta")
+@RequestMapping("/prezenta")
 public class ParticipantPrezentaController {
+
     private final ParticipantPrezentaRepository repository;
-    public ParticipantPrezentaController(ParticipantPrezentaRepository repository){
+    private final InscriereRepository inscriereRepository;
+    private final ActivitateRepository activitateRepository;
+
+    public ParticipantPrezentaController(ParticipantPrezentaRepository repository, InscriereRepository inscriereRepository,ActivitateRepository activitateRepository){
         this.repository=repository;
+        this.inscriereRepository=inscriereRepository;
+        this.activitateRepository=activitateRepository;
     }
 
+    ///  functie pentru coordonator
+    @GetMapping("/activitate/{idTabara}/{idActivitate}")
+     public List<PrezentaDTO> getAttendanceList(@PathVariable Long idTabara,@PathVariable Long idActivitate){
+        return repository.getListaPrezentaActivitate(idTabara,idActivitate);
+    }//trimitere id catre repository
+
+    /// functie pentru bifa checkbox
+    @PatchMapping("/bifeaza/{id}")
+    public ParticipantPrezenta attendanceCheckbox(@PathVariable Long id, @RequestBody Map<String, String> body){
+        ParticipantPrezenta p=repository.findById(id)
+                .orElseThrow(()-> new RuntimeException("Prezenta nu a fost gasita"));
+        p.setPrezenta(body.get("status"));//trimite da sau nu
+
+        return repository.save(p);
+
+    }
+
+    @PostMapping("/salveaza")
+    public PrezentaDTO salveazaPrezenta(@RequestBody PrezentaDTO dto) {
+
+        // Validare explicita
+        if (dto.getIdInscriere() == null || dto.getIdActivitate() == null) {
+            throw new RuntimeException("idInscriere sau idActivitate este null! DTO primit: " + dto);
+        }
+
+        ParticipantPrezenta salvat = repository
+                .findByInscriereIdAndActivitateId(dto.getIdInscriere(), dto.getIdActivitate())
+                .map(existent -> {
+                    existent.setPrezenta(dto.getPrezenta());
+                    existent.setObservatii(dto.getObservatii() != null ? dto.getObservatii() : "");
+                    return repository.save(existent);
+                })
+                .orElseGet(() -> {
+                    ParticipantPrezenta nou = new ParticipantPrezenta();
+                    nou.setInscriere(inscriereRepository.findById(dto.getIdInscriere())
+                            .orElseThrow(() -> new RuntimeException("Inscriere negasita: " + dto.getIdInscriere())));
+                    nou.setActivitate(activitateRepository.findById(dto.getIdActivitate())
+                            .orElseThrow(() -> new RuntimeException("Activitate negasita: " + dto.getIdActivitate())));
+                    nou.setPrezenta(dto.getPrezenta());
+                    nou.setObservatii(dto.getObservatii() != null ? dto.getObservatii() : "");
+                    return repository.save(nou);
+                });
+
+        // IMPORTANT: Returnam DTO, nu entitatea JPA!
+        // Construim manual ca sa nu facem inca un query
+        PrezentaDTO rezultat = new PrezentaDTO();
+        rezultat.setIdPrezenta(salvat.getId());
+        rezultat.setIdInscriere(dto.getIdInscriere());
+        rezultat.setIdActivitate(dto.getIdActivitate());
+        rezultat.setPrezenta(salvat.getPrezenta());
+        rezultat.setObservatii(salvat.getObservatii());
+        rezultat.setNume(dto.getNume());
+        rezultat.setPrenume(dto.getPrenume());
+        rezultat.setNumeTabara(dto.getNumeTabara());
+        rezultat.setNumeActivitate(dto.getNumeActivitate());
+        return rezultat;
+    }
+
+    /// CRUD
 /// afisare/citire
-    @GetMapping("/lista")
-    @ResponseBody
-    public List<ParticipantPrezenta> getAllAttendances(){
-        return repository.findAll();
+    @GetMapping("/lista/{idTabara}/{idActivitate}")
+    public List<PrezentaDTO> getLista(@PathVariable Long idTabara, @PathVariable Long idActivitate) {
+        return repository.getListaPrezentaActivitate(idTabara, idActivitate);
     }
-
     //Cautare participant dupa id
     @GetMapping("/{id}")
     @ResponseBody
@@ -60,12 +128,12 @@ public class ParticipantPrezentaController {
     @ResponseBody
     public ParticipantPrezenta updateAttendance(@PathVariable Long id,@Valid @RequestBody ParticipantPrezenta updatedAttendance){
         return repository.findById(id)
-                .map(attandance-> {
-                    attandance.setPrezenta(updatedAttendance.getPrezenta());
-                    attandance.setObservatii(updatedAttendance.getObservatii());
-                    attandance.setIdActivitate(updatedAttendance.getIdActivitate());
-                    attandance.setIdParticipant(updatedAttendance.getIdParticipant());
-                    return repository.save(attandance);
+                .map(attendance-> {
+                    attendance.setPrezenta(updatedAttendance.getPrezenta());
+                    attendance.setObservatii(updatedAttendance.getObservatii());
+                    attendance.setActivitate(updatedAttendance.getActivitate());
+                    attendance.setInscriere(updatedAttendance.getInscriere());
+                    return repository.save(attendance);
                 })
                 .orElseThrow(()->new RuntimeException("Prezenta nu a fost gasita ca sa fie modificata"));
     }

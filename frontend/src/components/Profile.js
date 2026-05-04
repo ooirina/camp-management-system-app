@@ -72,7 +72,6 @@ function Profile(){
                      <table className="table table-hover">
                        <thead className="table-light">
                          <tr>
-                           <th>Cod</th>
                            <th>Tabăra</th>
                            <th>Data Înscriere</th>
                            <th>Sumă</th>
@@ -83,8 +82,7 @@ function Profile(){
                          {inscrieri.length > 0 ? (
                            inscrieri.map((ins) => (
                              <tr key={ins.id}>
-                               <td>#{ins.id}</td>
-                               <td>Tabăra {ins.idTabara}</td>
+                               <td>{ins.numeTabara}</td>
                                <td>{new Date(ins.dataInscriere).toLocaleDateString()}</td>
                                <td><strong>{ins.suma} RON</strong></td>
                                <td>
@@ -96,7 +94,7 @@ function Profile(){
                            ))
                          ) : (
                            <tr>
-                             <td colSpan="5" className="text-center text-muted">Nu ai efectuat nicio înscriere până acum.</td>
+                             <td colSpan="4" className="text-center text-muted">Nu ai efectuat nicio înscriere până acum.</td>
                            </tr>
                          )}
                        </tbody>

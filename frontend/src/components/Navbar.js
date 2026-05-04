@@ -34,6 +34,9 @@ const handleLogout=()=>{
               <Link className="nav-link" to="/participanti">Participanți</Link>
             </li>
             <li className="nav-item">
+               <Link className="nav-link" to="/prezenta">Prezenta</Link>
+            </li>
+            <li className="nav-item">
               <Link className="nav-link" to="/inscrieri">Înscrieri</Link>
             </li>
             <li className="nav-item ms-lg-3">

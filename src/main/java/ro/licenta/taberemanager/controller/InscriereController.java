@@ -6,12 +6,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import ro.licenta.taberemanager.dto.InscriereDTO;
+import ro.licenta.taberemanager.dto.InscriereDetaliiDTO;
 import ro.licenta.taberemanager.model.Inscriere;
 import ro.licenta.taberemanager.model.Participant;
+import ro.licenta.taberemanager.model.Tabara;
 import ro.licenta.taberemanager.model.User;
 import ro.licenta.taberemanager.repository.InscriereRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ro.licenta.taberemanager.repository.ParticipantRepository;
+import ro.licenta.taberemanager.repository.TabaraRepository;
 import ro.licenta.taberemanager.repository.UserRepository;
 
 import java.math.BigDecimal;
@@ -26,11 +29,13 @@ public class InscriereController {
     private final InscriereRepository repository;
     private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
+    private final TabaraRepository tabaraRepository;
 
-    public InscriereController(InscriereRepository repository,ParticipantRepository participantRepository,UserRepository userRepository){
+    public InscriereController(InscriereRepository repository,ParticipantRepository participantRepository,UserRepository userRepository,TabaraRepository tabaraRepository){
         this.repository=repository;
         this.participantRepository = participantRepository;
         this.userRepository = userRepository;
+        this.tabaraRepository=tabaraRepository;
     }
 
 
@@ -79,8 +84,8 @@ public class InscriereController {
                     registration.setSuma(updatedRegistration.getSuma());
                     registration.setIdPlatitor(updatedRegistration.getIdPlatitor());
                     registration.setStatusPlata(updatedRegistration.getStatusPlata());
-                    registration.setIdParticipant(updatedRegistration.getIdParticipant());
-                    registration.setIdTabara(updatedRegistration.getIdTabara());
+                    registration.setParticipant(updatedRegistration.getParticipant());
+                    registration.setTabara(updatedRegistration.getTabara());
                     return repository.save(registration);
                 })
                 .orElseThrow(()-> new RuntimeException("Utilizatorul nu a fost gasit"));
@@ -116,8 +121,10 @@ public class InscriereController {
         i.setSuma(BigDecimal.valueOf(dto.getSuma()));
         i.setDataPlata(LocalDate.now());
         i.setStatusPlata("NEPLATIT");
-        i.setIdTabara(dto.getIdTabara());
-        i.setIdParticipant(participantSalvat.getId());//id generat automat mai sus
+        Tabara tabara =tabaraRepository.findById(dto.getIdTabara())//i.setTabara(dto.getIdTabara());
+                .orElseThrow(()-> new RuntimeException("Tabara nu exista"));
+        i.setTabara(tabara);//se da obiectul intreg , nu foar id ul
+        i.setParticipant(participantSalvat);//id generat automat mai sus
         //i.setIdPlatitor(user.getId());
         i.setIdPlatitor(207L); // FORȚĂM manual ID-ul 207 (cu L la final pentru Long)
         System.out.println("TEST DISPERAT: Trimit ID-ul fix 207 căruia MySQL îi dă bifa verde.");
@@ -126,15 +133,15 @@ public class InscriereController {
         // SALVAREA CU FORȚARE:
         Inscriere salvata = repository.saveAndFlush(i); // Folosește saveAndFlush în loc de save
         System.out.println("DEBUG FINAL - Platitor: " + i.getIdPlatitor());
-        System.out.println("DEBUG FINAL - Participant: " + i.getIdParticipant());
+        System.out.println("DEBUG FINAL - Participant: " + i.getParticipant());
         System.out.println("DEBUG FINAL - Suma: " + i.getSuma());
         System.out.println("🚀 SUCCES TOTAL! Înscriere salvată.");
         return salvata;
     }
     @GetMapping("/istoric/{idPlatitor}")
-    public List<Inscriere> getIstoricUserRegistrations(@PathVariable Long idPlatitor)
+    public List<InscriereDetaliiDTO> getIstoricUserRegistrations(@PathVariable Long idPlatitor)
     {
-        return repository.findByIdPlatitorOrderByIdDesc(idPlatitor);
+        return repository.findDetailedInscrieri(idPlatitor);
     }
     
 }

@@ -15,7 +15,7 @@ import RegisterPage from './components/auth/RegisterPage';
 import  AdminLoginPage from './components/auth/AdminLoginPage'
 import Profile from './components/Profile';
 import CampDetails from './components/CampDetails';
-
+import AttendancePage from  './components/AttendancePage';
 
 
 function App() {
@@ -54,6 +54,7 @@ function App() {
            <Route path="/register" element={<RegisterPage />} />
            <Route path="/camp-details/:id" element={<CampDetails />}/>
            <Route path="/add-registration" element={<AddRegistration />}/>
+           <Route path="/prezenta" element={<AttendancePage/>}/>
         </Routes>
       </div>
     </Router>
