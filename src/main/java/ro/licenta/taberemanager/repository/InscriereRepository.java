@@ -17,6 +17,7 @@ public interface InscriereRepository extends JpaRepository<Inscriere,Long> {
   " FROM Inscriere i JOIN i.tabara t "+" WHERE i.idPlatitor =:idPlatitor"+" ORDER BY i.id DESC")
 
   List<InscriereDetaliiDTO> findDetailedInscrieri(@Param("idPlatitor") Long idPlatitor);
+    List<Inscriere> findByTabaraIdAndCameraIsNull(Long idTabara);
 
 
 

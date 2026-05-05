@@ -53,4 +53,8 @@ public class Inscriere {
     @NotNull
     @Column(name="id_platitor")
     private Long idPlatitor;
+
+    @ManyToOne
+    @JoinColumn(name = "id_camera", nullable = true)
+    private Camera camera;
 }
