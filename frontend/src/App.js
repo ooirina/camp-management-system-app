@@ -17,7 +17,7 @@ import Profile from './components/Profile';
 import CampDetails from './components/CampDetails';
 import AttendancePage from  './components/AttendancePage';
 import AccommodationPage from './components/AccommodationPage';
-
+import CheckInOutPage from './components/CheckInOutPage';
 
 function App() {
   // OBSERVAȚIE: Am șters useEffect și axios de aici!
@@ -57,6 +57,7 @@ function App() {
            <Route path="/add-registration" element={<AddRegistration />}/>
            <Route path="/prezenta" element={<AttendancePage/>}/>
            <Route path="/cazare" element={<AccommodationPage />} />
+           <Route path="/check-in-out" element={<CheckInOutPage />} />
         </Routes>
       </div>
     </Router>

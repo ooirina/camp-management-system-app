@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -57,4 +58,13 @@ public class Inscriere {
     @ManyToOne
     @JoinColumn(name = "id_camera", nullable = true)
     private Camera camera;
+
+    @Column(name="status_sosire")
+    private String statusSosire;//nesosit, sosit
+
+    @Column(name = "data_checkin")
+    private LocalDateTime dataCheckin;
+
+    @Column(name = "data_checkout")
+    private LocalDateTime dataCheckout;
 }

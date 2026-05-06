@@ -15,6 +15,7 @@ const AccommodationPage = () => {
         axios.get('http://localhost:8080/tabere/lista').then(res => setTabere(res.data));
     }, []);
 
+
     const startEdit=(cam)=>{
     setIsEditing(true);
     setEditingCameraId(cam.id);
@@ -135,6 +136,13 @@ const AccommodationPage = () => {
     return (
         <div className="container-fluid mt-4">
             <h3>🏠 Management Cazare</h3>
+
+            <button
+                    className="btn btn-outline-primary"
+                    onClick={() => window.location.href='/check-in-out'}
+                >
+                    Check In/Check Out
+                </button>
 
             {/* Panou Adăugare/Editare Cameră */}
             <div className={`card shadow-sm mb-4 ${isEditing ? 'border-warning' : 'border-primary'}`}>
