@@ -18,6 +18,10 @@ import CampDetails from './components/CampDetails';
 import AttendancePage from  './components/AttendancePage';
 import AccommodationPage from './components/AccommodationPage';
 import CheckInOutPage from './components/CheckInOutPage';
+import CampsMapPage from './components/CampsMapPage';
+import AddCampForm from './components/AddCampForm';
+import AddTrailForm from './components/AddTrailForm';
+import 'leaflet/dist/leaflet.css';
 
 function App() {
   // OBSERVAȚIE: Am șters useEffect și axios de aici!
@@ -58,6 +62,9 @@ function App() {
            <Route path="/prezenta" element={<AttendancePage/>}/>
            <Route path="/cazare" element={<AccommodationPage />} />
            <Route path="/check-in-out" element={<CheckInOutPage />} />
+           <Route path="/harta" element={<CampsMapPage />} />
+           <Route path="/admin/adauga-tabara" element={<AddCampForm />} />
+           <Route path="/admin/adauga-traseu" element={<AddTrailForm />} />
         </Routes>
       </div>
     </Router>

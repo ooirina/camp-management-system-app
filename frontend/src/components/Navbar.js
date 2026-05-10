@@ -28,6 +28,11 @@ const handleLogout=()=>{
               <Link className="nav-link" to="/tabere">Tabere</Link>
             </li>
             <li className="nav-item">
+                <Link className="nav-link" to="/harta">
+                    <i className="bi bi-map-fill me-1"></i> Hartă Tabere
+                </Link>
+            </li>
+            <li className="nav-item">
               <Link className="nav-link" to="/activitati">Activități</Link>
             </li>
             <li className="nav-item">
@@ -42,11 +47,20 @@ const handleLogout=()=>{
             <li className="nav-item">
               <Link className="nav-link" to="/inscrieri">Înscrieri</Link>
             </li>
-            <li className="nav-item ms-lg-3">
+            <li className="nav-item dropdown">
+                <a className="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                    ⚙️ Admin
+                </a>
+                <ul className="dropdown-menu">
+                    <li><Link className="dropdown-item" to="/admin/adauga-tabara">Adaugă Tabără</Link></li>
+                    <li><Link className="dropdown-item" to="/admin/adauga-traseu">Adaugă Traseu</Link></li>
+                </ul>
+            </li>
+           {/* <li className="nav-item ms-lg-3">
               <Link className="btn btn-primary btn-sm mt-1" to="/inscrieri/nou">
                 ➕ Înscriere Nouă
               </Link>
-            </li>
+            </li>*/}
 
             {!token?(
             <li className="nav-item dropdown ms-lg-3">

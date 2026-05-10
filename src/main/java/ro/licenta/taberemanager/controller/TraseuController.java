@@ -14,6 +14,7 @@ import java.util.List;
 
 public class TraseuController {
     private final TraseuRepository repository;
+
 public TraseuController(TraseuRepository repository){
     this.repository=repository;
 }
@@ -24,18 +25,11 @@ public TraseuController(TraseuRepository repository){
     return repository.findAll();
 }
 
-@PostMapping
+@PostMapping("/creare")
 @ResponseBody
     public Traseu createTrail(@Valid @RequestBody  Traseu traseu)
 {
     return repository.save(traseu);
-}
-
-@DeleteMapping("/{id}")
-    @ResponseBody
-    public void deleteTrail(@PathVariable Long id)
-{
-    repository.deleteById(id);
 }
 
 @PutMapping("/actualizare/{id}")
@@ -48,10 +42,19 @@ public Traseu updateTrail(@PathVariable Long id, @Valid @RequestBody Traseu upda
         trail.setDificultate(updatedTrail.getDificultate());
         trail.setDistantaKm(updatedTrail.getDistantaKm());
         trail.setDurataOre(updatedTrail.getDurataOre());
+        trail.setCoordonate(updatedTrail.getCoordonate());//permite modificcare linie desenata pe harta
        return repository.save(trail);
     })
             .orElseThrow(()->new RuntimeException("Traseul nu a fost gasit."));
 }
+
+    @DeleteMapping("/{id}")
+    @ResponseBody
+    public void deleteTrail(@PathVariable Long id)
+    {
+        repository.deleteById(id);
+    }
+
 
 }
 

@@ -1,5 +1,6 @@
 package ro.licenta.taberemanager.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import  lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 
 
 @Entity
@@ -43,4 +45,12 @@ public class Tabara {
     @NotNull
     @Column(name="tip_public")
     private String tipPublic;
+
+    @Transient // Înseamnă că acest câmp NU există în tabelul 'tabara' din DB,
+    // dar îl folosim în cod pentru a trimite datele către Frontend
+    @JsonProperty("trasee")
+    private List<Traseu> trasee;
+
+    private BigDecimal latitudine;
+    private BigDecimal longitudine;
 }

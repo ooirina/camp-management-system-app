@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+
 import axios from 'axios';
 
 function CampDetails() {
@@ -27,6 +28,12 @@ function CampDetails() {
 
     return (
         <div className="container mt-5">
+         <div className="mt-3 d-flex gap-2">
+                            <Link to="/admin/adauga-traseu" className="btn btn-outline-primary btn-sm fw-bold">
+                                📍 Adaugă Traseu Nou
+                            </Link>
+
+                        </div>
             <div className="row shadow-lg p-3 mb-5 bg-white rounded">
                 <div className="col-md-7">
                     <img src={tabara.imagine || 'https://via.placeholder.com/600x400'} className="img-fluid rounded" alt={tabara.nume} />
@@ -36,6 +43,7 @@ function CampDetails() {
                     <h5>Descriere</h5>
                     <p>{tabara.descriere || 'O tabără de neuitat plină de aventuri.'}</p>
                 </div>
+
 
                 <div className="col-md-5">
                     <div className="p-4 border rounded bg-light">

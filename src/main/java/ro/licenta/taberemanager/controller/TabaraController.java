@@ -47,8 +47,8 @@ public class TabaraController {
         return repository.findAll(pageable);
     }
 
-    //Actualizare date tabara
-    @PutMapping("actualizare/{id}")
+    //Actualizare date tabara UPDATE
+    @PutMapping("/actualizare/{id}")
     @ResponseBody
     public Tabara updateCamp(@PathVariable Long id, @Valid @RequestBody Tabara updatedCamp){
         return repository.findById(id)
@@ -62,12 +62,15 @@ public class TabaraController {
                    camp.setTipPublic(updatedCamp.getTipPublic());
                    camp.setVarstaMin(updatedCamp.getVarstaMin());
                    camp.setVarstaMax(updatedCamp.getVarstaMax());
+                   camp.setLatitudine(updatedCamp.getLatitudine());
+                   camp.setLongitudine(updatedCamp.getLongitudine());
 
                     return repository.save(camp);
                 })
-                .orElseThrow(()->new RuntimeException("Particiant nu a fost gasit"));
+                .orElseThrow(()->new RuntimeException("Tabara nu a fost gasita"));
 
     }
+    //DELETE
     @DeleteMapping("stergere/{id}")
     @ResponseBody
     public void deleteCamp (@PathVariable Long id){
