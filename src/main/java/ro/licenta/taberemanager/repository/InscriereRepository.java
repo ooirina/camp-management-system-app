@@ -19,6 +19,7 @@ public interface InscriereRepository extends JpaRepository<Inscriere,Long> {
   List<InscriereDetaliiDTO> findDetailedInscrieri(@Param("idPlatitor") Long idPlatitor);
     List<Inscriere> findByTabaraIdAndCameraIsNull(Long idTabara);
     List<Inscriere> findByTabaraId(Long idTabara);
+    long countByTabaraId(Long tabaraId);
 
 
 

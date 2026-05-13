@@ -14,6 +14,7 @@ public class InscriereDTO {
     private String alergii;
     private String problemeMedicale;
     private String contactUrgenta;
+    private String gen;
 
     // Date Inscriere
     private Long idTabara;

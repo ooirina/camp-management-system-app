@@ -1,6 +1,7 @@
 package ro.licenta.taberemanager.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,7 @@ public class InscriereController {
         this.participantRepository = participantRepository;
         this.userRepository = userRepository;
         this.tabaraRepository=tabaraRepository;
+
     }
 
 
@@ -73,7 +75,8 @@ public class InscriereController {
         repository.deleteById(id);
     }
 
-    //actualizare inscriere
+
+   //actualizare inscriere
     @PutMapping("/actualizare/{id}")
     public Inscriere updateRegistration(@PathVariable Long id, @Valid @RequestBody Inscriere updatedRegistration){
         return repository.findById(id)
@@ -93,6 +96,16 @@ public class InscriereController {
 
     @PostMapping("/save-completa")
     public Inscriere saveInscriereCompleta(@RequestBody InscriereDTO dto ) {
+        Tabara tabaraVerificare = tabaraRepository.findById(dto.getIdTabara())
+                .orElseThrow(()-> new RuntimeException("Tabara nu exista"));
+
+        long inscrieriCurente = repository.countByTabaraId(tabaraVerificare.getId());
+
+        if (tabaraVerificare.getCapacitate().longValue() - inscrieriCurente <= 0) {
+            throw new RuntimeException("Eroare: Tabăra a atins capacitatea maximă!");
+        }
+
+
         System.out.println("Email primit  trimis de react:[" + dto.getEmailUtilizator()+"]");
         //cautare user in bd dupa email de google pt a il lega de participant
         User user= userRepository.findByEmail(dto.getEmailUtilizator()).orElseThrow();
@@ -103,6 +116,7 @@ public class InscriereController {
         p.setNume(dto.getNumeParticipant());
         p.setPrenume(dto.getPrenumeParticipant());
         p.setDataNasterii(dto.getDataNasterii());
+        p.setGen(dto.getGen());
         p.setTelefon(dto.getTelefon());
         p.setAlergii(dto.getAlergii());
         p.setProblemeMedicale(dto.getProblemeMedicale());
@@ -138,6 +152,19 @@ public class InscriereController {
         System.out.println("🚀 SUCCES TOTAL! Înscriere salvată.");
         return salvata;
     }
+
+    @GetMapping("/locuri-disponibile/{tabaraId}")
+    public ResponseEntity<Long> getLocuriDisponibile(@PathVariable Long tabaraId) {
+        Tabara tabara = tabaraRepository.findById(tabaraId)
+                .orElseThrow(() -> new RuntimeException("Tabara nu exista"));
+
+        long inscrieri = repository.countByTabaraId(tabaraId);
+
+        long disponibile = tabara.getCapacitate().longValue() - inscrieri;
+
+        return ResponseEntity.ok(disponibile > 0 ? disponibile : 0);
+    }
+
     @GetMapping("/istoric/{idPlatitor}")
     public List<InscriereDetaliiDTO> getIstoricUserRegistrations(@PathVariable Long idPlatitor)
     {

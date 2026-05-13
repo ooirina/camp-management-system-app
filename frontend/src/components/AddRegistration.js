@@ -24,8 +24,8 @@ const [formData, setFormData]=useState({
     contactUrgenta:'',
     emailUtilizator:localStorage.getItem('userEmail'),
     idTabara: tabaraId,
-    suma:pretTabara|| ''//se completeaza automat pretul taberei
-
+    suma:pretTabara|| '',//se completeaza automat pretul taberei
+    gen:''
 
 });
 const handleChange=(e)=>{
@@ -84,6 +84,20 @@ if(tabaraId){
                          <div className="mb-3">
                              <label className="form-label">Prenume </label>
                              <input type="text" name="prenumeParticipant" className="form-control" onChange={handleChange} required />
+                         </div>
+                         <div className="mb-3">
+                             <label className="form-label">Gen</label>
+                             <select
+                                 className="form-select"
+                                 name="gen"
+                                 value={formData.gen}
+                                 onChange={handleChange}
+                                 required
+                             >
+                                 <option value="">-- Selectează genul --</option>
+                                 <option value="M">Masculin</option>
+                                 <option value="F">Feminin</option>
+                             </select>
                          </div>
 
                    <hr />

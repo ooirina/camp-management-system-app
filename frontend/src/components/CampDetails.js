@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-
 import axios from 'axios';
 
 function CampDetails() {
     const { id } = useParams();
     const [tabara, setTabara] = useState(null);
     const [activitati, setActivitati]= useState([]);///salvare lista care o trimite Java
+    const [locuriDisponibile, setLocuriDisponibile]= useState(null);
     const navigate = useNavigate();
+
     const handleInscriere=()=>{
     //ca sa apara numele taberei automat in formularul de inscriere se adauga nume si ID in URL
     navigate(`add-registration?tabaraId=${id}&numeTabara=${tabara.nume}`);
@@ -22,7 +23,11 @@ function CampDetails() {
         axios.get(`http://localhost:8080/activitati/tabara/${id}`)
              .then(res => setActivitati(res.data))
              .catch(err => console.error("Eroare la activitati",err));
-    }, [id]);
+
+        axios.get(`http://localhost:8080/inscrieri/locuri-disponibile/${id}`)
+              .then(res => setLocuriDisponibile(res.data))
+              .catch(err => console.error("Eroare la calcul locuri", err));
+   }, [id]);
 
     if (!tabara) return <div className="text-center mt-5">Se încarcă...</div>;
 
@@ -48,7 +53,12 @@ function CampDetails() {
                 <div className="col-md-5">
                     <div className="p-4 border rounded bg-light">
                         <h3 className="text-danger">{tabara.pret} RON</h3>
-                        <p className="text-success">Disponibil acum</p>
+
+                       {/*afisare a disponibilitatii*/}
+
+                       {locuriDisponibile > 0 ? (
+                        <>
+                        <p className="text-success">Disponibil acum ({locuriDisponibile} locuri rămase)</p>
                         <div className="mb-3">
                             <label className="form-label">Data: {tabara.data_inceput}</label>
                         </div>
@@ -58,6 +68,19 @@ function CampDetails() {
                         >
                             Înscrie-te acum
                         </button>
+                        </>
+                        ):(
+                        <>
+                        <p className="text-danger fw-bold fs-5">Sold Out - Nu mai sunt locuri!</p>
+                             <div className="mb-3">
+                                 <label className="form-label text-muted">Data: {tabara.data_inceput}</label>
+                                   </div>
+                                    <button className="btn btn-secondary w-100 p-3 fs-5"
+                                        disabled >
+                                            Capacitate Maximă Atinsă
+                                            </button>
+                          </>
+                        )}
                     </div>
                 </div>
             </div>

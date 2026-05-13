@@ -49,6 +49,28 @@ function Profile(){
 
   };
 
+  // Funcția care se apelează când apeși butonul "Anulează"
+  const handleStergere = async (idInscriere) => {
+      // Fereastra pop-up nativă din browser care te întreabă dacă ești sigur
+      const confirmare = window.confirm("Ești sigur(ă) că vrei să anulezi această înscriere? Locul va fi eliberat.");
+
+      if (confirmare) {
+          try {
+              // Trimitem cererea către metoda ta deja existentă în Java
+              await axios.delete(`http://localhost:8080/inscrieri/stergere/${idInscriere}`);
+
+              // Actualizăm lista pe ecran ca rândul să dispară instantaneu fără să dăm refresh
+              // (înlocuiește "inscrieri" și "setInscrieri" cu numele variabilei tale de state dacă e diferit)
+              setInscrieri(inscrieri.filter(item => item.id !== idInscriere));
+
+              alert("Înscrierea a fost anulată cu succes!");
+          } catch (error) {
+              console.error("Eroare la ștergerea înscrierii:", error);
+              alert("A apărut o eroare la ștergere.");
+          }
+      }
+  };
+
   return(
   <div className="container mt-5">
      <div className="card shadow p-4 text-center">
@@ -76,6 +98,7 @@ function Profile(){
                            <th>Data Înscriere</th>
                            <th>Sumă</th>
                            <th>Status</th>
+                           <th>Acțiuni</th>
                          </tr>
                        </thead>
                        <tbody>
@@ -89,6 +112,12 @@ function Profile(){
                                  <span className={`badge ${ins.statusPlata === 'PLATIT' ? 'bg-success' : 'bg-warning text-dark'}`}>
                                    {ins.statusPlata}
                                  </span>
+                               </td>
+
+                               <td>
+                                   <button className="btn btn-sm btn-danger fw-bold" onClick={() => handleStergere(ins.id)} >
+                                       ❌ Anulează
+                                   </button>
                                </td>
                              </tr>
                            ))
