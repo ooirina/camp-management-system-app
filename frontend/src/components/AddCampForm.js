@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import axios from 'axios';
 import L from 'leaflet';
@@ -24,6 +24,8 @@ const LocationSelector = ({ setPosition }) => {
 const AddCampForm = () => {
     const [pos, setPos] = useState([45.9432, 24.9668]);
     const [locatieMutata, setLocatieMutata]=useState(false);
+    //vine din bd ca sa populeze drop down
+    const[listaCategorii, setListaCategorii]=useState([]);
     const [formData, setFormData] = useState({
         nume: '',
         locatie: '',
@@ -35,7 +37,8 @@ const AddCampForm = () => {
         varstaMax: '',
         tipPublic: '',
         latitudine: 45.9432,
-        longitudine: 24.9668
+        longitudine: 24.9668,
+        categorieId:''
     });
 
     // 1. Funcția care se ocupă de CLICK-UL pe hartă
@@ -65,13 +68,29 @@ const AddCampForm = () => {
                 alert(" Te rugăm să selectezi locația exactă a taberei pe hartă (dă click pe hartă unde se află tabăra)!");
                 return;
                 }
-        axios.post('http://localhost:8080/tabere/creare', formData, { withCredentials: true })
-            .then(res => alert("Tabără adăugată cu succes!"))
-            .catch(err => {
-                console.error(err);
-                alert("Eroare la salvare!");
-            });
+
+         // Copiem tot din formData, dar transformăm categorieId într-o listă de obiecte
+             const dataToSend = {
+                 ...formData,
+                 categorii: [{ id: formData.categorieId }]
+             };
+//Trimitem 'dataToSend' în loc de 'formData' ---
+      axios.post('http://localhost:8080/tabere/creare', dataToSend, { withCredentials: true })
+          .then(res => alert("Tabără adăugată cu succes!"))
+          .catch(err => {
+              console.error(err);
+              alert("Eroare la salvare!");
+          });
     };
+
+
+    //extragere categorie cand se incarca pagina
+    useEffect(()=>{
+    axios.get('http://localhost:8080/categorii/lista')
+          .then(res => setListaCategorii(res.data))
+          .catch(err => console.error("Eroare la categorii:", err));
+
+    },[]);
 
     return (
         <div className="container mt-4">
@@ -100,12 +119,28 @@ const AddCampForm = () => {
                        value={formData.tipPublic}
                        required
                    >
-                       <option value="">-- Selectează Categoria --</option>
+                       <option value="">-- Selectează Categoria de Persoane--</option>
                        <option value="COPII">Copii</option>
                        <option value="ADULTI">Adulți</option>
                        <option value="STUDENTI">Studenți</option>
                        <option value="FAMILIE">Familie</option>
                        <option value="MIXTA">Mixtă / Toate categoriile</option>
+                   </select>
+
+                   <label className="small fw-bold text-muted">Ce tip de tabără este?</label>
+                   <select
+                       className="form-select"
+                       name="categorieId"
+                       value={formData.categorieId}
+                       onChange={handleChange}
+                       required
+                   >
+                       <option value="">-- Selectează Categoria --</option>
+                       {listaCategorii.map(cat => (
+                           <option key={cat.id} value={cat.id}>
+                               {cat.tip}
+                           </option>
+                       ))}
                    </select>
 
                    {/* Container ascuns pentru coordonate */}

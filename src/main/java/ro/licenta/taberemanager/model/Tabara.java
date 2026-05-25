@@ -28,6 +28,7 @@ public class Tabara {
     private String locatie;
     @NotNull
     @Column(name="data_inceput")
+    @JsonProperty("dataInceput")
     private LocalDate dataInceput;
     @NotNull
     @Column(name="data_sfarsit")
@@ -53,4 +54,12 @@ public class Tabara {
 
     private BigDecimal latitudine;
     private BigDecimal longitudine;
+
+    @ManyToMany
+    @JoinTable(
+            name="tabara_categorie",
+            joinColumns = @JoinColumn(name = "id_tabara"),
+            inverseJoinColumns =@JoinColumn(name="id_categorie")
+    )
+    private List<Categorie> categorii;
 }

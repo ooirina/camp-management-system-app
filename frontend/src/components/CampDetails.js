@@ -17,7 +17,8 @@ function CampDetails() {
     useEffect(() => {
     //luare datele taberei
         axios.get(`http://localhost:8080/tabere/${id}`)
-            .then(res => setTabara(res.data))
+            .then(res =>
+            setTabara(res.data))
             .catch(err => console.error(err));
     ///luare itinerariul taberei
         axios.get(`http://localhost:8080/activitati/tabara/${id}`)
@@ -60,7 +61,7 @@ function CampDetails() {
                         <>
                         <p className="text-success">Disponibil acum ({locuriDisponibile} locuri rămase)</p>
                         <div className="mb-3">
-                            <label className="form-label">Data: {tabara.data_inceput}</label>
+                            <label className="form-label">Data: {tabara.dataInceput}</label>
                         </div>
                         <button
                             className="btn btn-primary w-100 p-3 fs-5"
@@ -73,7 +74,7 @@ function CampDetails() {
                         <>
                         <p className="text-danger fw-bold fs-5">Sold Out - Nu mai sunt locuri!</p>
                              <div className="mb-3">
-                                 <label className="form-label text-muted">Data: {tabara.data_inceput}</label>
+                                 <label className="form-label text-muted">Data: {tabara.dataInceput}</label>
                                    </div>
                                     <button className="btn btn-secondary w-100 p-3 fs-5"
                                         disabled >

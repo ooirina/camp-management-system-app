@@ -23,7 +23,7 @@ function RegisterPage(){
              } catch(err)
              {
                  console.error("Eroare la înregistrare:", err);
-                 alert ("Eroare la înregistrare! Verifică dacă email-ul este deja folosit sau dacă serverul Java este pornit. ");
+                 alert ("Eroare la înregistrare! Verifică dacă email-ul este deja folosit ! ");
 
              }finally{
              setLoading(false);

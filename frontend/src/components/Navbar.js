@@ -56,6 +56,9 @@ const handleLogout=()=>{
                     <li><Link className="dropdown-item" to="/admin/adauga-traseu">Adaugă Traseu</Link></li>
                 </ul>
             </li>
+            <li className="nav-item">
+                    <Link className="nav-link" to="/register">Înregistrare</Link>
+                </li>
            {/* <li className="nav-item ms-lg-3">
               <Link className="btn btn-primary btn-sm mt-1" to="/inscrieri/nou">
                 ➕ Înscriere Nouă

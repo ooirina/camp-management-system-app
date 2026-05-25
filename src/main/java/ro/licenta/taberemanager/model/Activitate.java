@@ -36,4 +36,7 @@ public class Activitate {
     @NotNull
     @Column(name="id_tabara")
     private BigDecimal idTabara;
+    @ManyToOne
+    @JoinColumn(name = "id_coordonator")
+    private User coordonator;
 }

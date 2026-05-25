@@ -67,7 +67,7 @@ function LoginPage() {
               Ești administrator?
                </p>
                <span
-                   className="badge bg-danger" style={{ cursor: 'pointer', padding: '8px 12px' }} onClick={() => alert("Pagina de administrator va fi disponibilă în curând!")}>
+                   className="badge bg-danger" style={{ cursor: 'pointer', padding: '8px 12px' }} onClick={() => navigate('/admin-login') }>
                    Conectează-te aici
                </span>
            </div>

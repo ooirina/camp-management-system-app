@@ -74,7 +74,7 @@ function Profile(){
   return(
   <div className="container mt-5">
      <div className="card shadow p-4 text-center">
-         <h1 className="text-success">Bine ai venit în Dashboard!</h1>
+         <h1 className="text-success">Bine ai venit în Profilul meu!</h1>
          <p className="lead mt-3">
          Te-ai logat cu succes în Sistemul de Gestiune Tabere.
          </p>

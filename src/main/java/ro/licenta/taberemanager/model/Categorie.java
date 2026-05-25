@@ -15,6 +15,7 @@ import java.util.Date;
 public class Categorie {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotNull
     private String tip;

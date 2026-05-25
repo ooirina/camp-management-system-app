@@ -21,6 +21,7 @@ import CheckInOutPage from './components/CheckInOutPage';
 import CampsMapPage from './components/CampsMapPage';
 import AddCampForm from './components/AddCampForm';
 import AddTrailForm from './components/AddTrailForm';
+import AdminDashboard from './components/AdminDashboard';
 import 'leaflet/dist/leaflet.css';
 
 function App() {
@@ -65,6 +66,7 @@ function App() {
            <Route path="/harta" element={<CampsMapPage />} />
            <Route path="/admin/adauga-tabara" element={<AddCampForm />} />
            <Route path="/admin/adauga-traseu" element={<AddTrailForm />} />
+           <Route path="/admin/dashboard" element={<AdminDashboard/>} />
         </Routes>
       </div>
     </Router>

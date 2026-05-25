@@ -56,8 +56,8 @@ public class AuthService {
 
     public String register(User userNou){
 
-        if(userRepository.findByEmail(userNou.getEmail())!=null){
-            throw new RuntimeException("Eroare:Email-ul este deja utilizat!");
+        if(userRepository.findByEmail(userNou.getEmail()).isPresent()) {
+            throw new RuntimeException("Eroare: Email-ul este deja utilizat!");
         }
         /// criptare parola
         userNou.setParola(passwordEncoder.encode(userNou.getParola()));
