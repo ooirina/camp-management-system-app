@@ -1,6 +1,7 @@
 package ro.licenta.taberemanager.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +12,10 @@ import ro.licenta.taberemanager.repository.ActivitateRepository;
 import ro.licenta.taberemanager.repository.InscriereRepository;
 import ro.licenta.taberemanager.repository.ParticipantPrezentaRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
-
+import ro.licenta.taberemanager.repository.UserRepository;
+import ro.licenta.taberemanager.model.User;
+import ro.licenta.taberemanager.model.Activitate;
+import java.util.Optional;
 import java.util.List;
 import java.util.Map;
 
@@ -23,12 +27,26 @@ public class ParticipantPrezentaController {
     private final ParticipantPrezentaRepository repository;
     private final InscriereRepository inscriereRepository;
     private final ActivitateRepository activitateRepository;
-
-    public ParticipantPrezentaController(ParticipantPrezentaRepository repository, InscriereRepository inscriereRepository,ActivitateRepository activitateRepository){
+    private final UserRepository userRepository;
+    public ParticipantPrezentaController(ParticipantPrezentaRepository repository, InscriereRepository inscriereRepository,ActivitateRepository activitateRepository, UserRepository userRepository){
         this.repository=repository;
         this.inscriereRepository=inscriereRepository;
         this.activitateRepository=activitateRepository;
+        this.userRepository=userRepository;
     }
+
+    /// prinde email-ul coordonatorului logat și îi returnează doar activitățile lui
+    @GetMapping("/activitati-coordonator")
+    public List<Activitate> getActivitatiPentruCoordonator(@RequestParam String email){
+
+        // 1. Găsim user-ul sau aruncăm direct eroare (cum ai făcut la bifeaza)
+      User coordonator = userRepository.findByEmail(email)
+              .orElseThrow(()-> new RuntimeException("Eroare: Coordonatorul nu a fost găsit!"));
+        // 2. Returnăm direct lista (dacă e user normal, va da o listă goală [])
+       return  activitateRepository.findByCoordonatorId(coordonator.getId());
+
+    }
+
 
     ///  functie pentru coordonator
     @GetMapping("/activitate/{idTabara}/{idActivitate}")

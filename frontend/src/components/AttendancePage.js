@@ -4,26 +4,74 @@ import axios from 'axios';
 const AttendancePage = () => {
     const [tabere, setTabere] = useState([]);
     const [activitati, setActivitati] = useState([]);
+    const [activitatiCoordonator, setActivitatiCoordonator]=useState([]);
     const [participanti, setParticipanti] = useState([]);
     const [selectedTabara, setSelectedTabara] = useState('');
     const [selectedActivitate, setSelectedActivitate] = useState('');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        axios.get('http://localhost:8080/tabere/lista')
-            .then(res => setTabere(res.data))
-            .catch(err => console.error("Eroare la tabere:", err));
-    }, []);
 
+        const emailCoordonator= localStorage.getItem('userEmail');
+        if(!emailCoordonator)
+        {
+        console.error("Nu există email de coordonator în localStorage!");
+        return;
+        }
+       ///aducere acitivitati coordonatorului
+        axios.get(`http://localhost:8080/prezenta/activitati-coordonator?email=${emailCoordonator}`)
+        .then(res=> {
+              const activitatiPermise =res.data;
+              setActivitatiCoordonator(activitatiPermise);// salvare pentru al doilea dropdown
+         //extrage ID tabere
+         const idUriTabere=new Set();
+         activitatiPermise.forEach(act=>{
+         // Dacă activitatea are o tabără asociată și nu am mai adăugat-o deja
+         if(act.idTabara){
+               idUriTabere.add(act.idTabara);
+
+         }
+         });
+         axios.get('http://localhost:8080/tabere/lista')
+         .then(resTabere=>{
+         const allTabere = resTabere.data;
+         ///aducere toate tabere cau au ID urile in Set-ul coordonatorului
+         const tabereFiltrate= allTabere.filter(tabere=>idUriTabere.has(tabere.id));
+         setTabere(tabereFiltrate);//poulare primul dropdown cu numele taberei
+        })
+        .catch(err => console.error("Eroare la aducerea tabere:", err));
+})
+            .catch(err => console.error("Eroare la aducerea activităților coordonatorului:", err));
+
+//sa apara lista tabere , aasa mergea daca nu e limitat de ce tip e emailul
+       /* axios.get('http://localhost:8080/tabere/lista')
+            .then(res => setTabere(res.data))
+            .catch(err => console.error("Eroare la tabere:", err));*/
+
+
+    }, []);
+//cand se alege tabara
     const handleTabaraChange = (e) => {
         const id = e.target.value;
         setSelectedTabara(id);
         setSelectedActivitate('');
         setParticipanti([]);
         if (id) {
-            axios.get(`http://localhost:8080/activitati/tabara/${id}`)
+          /* //apwlam axios pt a avea toate activtatile taberelor
+           axios.get(`http://localhost:8080/activitati/tabara/${id}`)
                 .then(res => setActivitati(res.data))
                 .catch(err => console.error("Eroare la activitati:", err));
+        */
+        //activitatile coordonatorilor din tabara sunt luate deja din "activitatiCoordonator"
+        //se filtreaza pe cele care apartin de tabara selectata
+        //cautare activitățile care au "idTabara" egal cu id-ul selectat
+        const activitatiFiltrate= activitatiCoordonator.filter(
+        act=> act.idTabara && act.idTabara.toString()=== id.toString()
+        );
+        setActivitati(activitatiFiltrate);//populare al doilea dropdown
+        }
+        else {
+        setActivitati([]);
         }
     };
 

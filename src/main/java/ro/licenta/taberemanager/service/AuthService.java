@@ -33,10 +33,10 @@ public class AuthService {
         //luare id ul rolului din obiectul user
         int roleId= user.getIdRol().intValue();
 
-        //daca e la logare de admin, dar are id ul de user sau altceva- se refuza
-       if("ADMIN".equals(loginType)&& roleId!=1)
+        //daca e la logare de admin/coordonator, dar are id ul de user sau altceva- se refuza
+       if("ADMIN".equals(loginType)&& roleId!=1 && roleId != 2)
        {
-           throw new RuntimeException("Acces interzis:Acest cont nu are drepturi de administrator.");
+           throw new RuntimeException("Acces interzis:Acest cont nu are drepturi de administrator sau coordonator.");
        }
   // daca  e la pagina de user, dar are id de admin
        if("USER".equals(loginType)&& roleId ==1)
