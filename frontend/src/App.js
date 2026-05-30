@@ -13,7 +13,8 @@ import LoginPage from './components/auth/LoginPage';
 import Dashboard from './components/Dashboard';
 import RegisterPage from './components/auth/RegisterPage';
 import  AdminLoginPage from './components/auth/AdminLoginPage'
-import Profile from './components/Profile';
+import UserProfile from './components/auth/UserProfile';
+import CoordonatorProfile from './components/auth/CoordonatorProfile';
 import CampDetails from './components/CampDetails';
 import AttendancePage from  './components/AttendancePage';
 import AccommodationPage from './components/AccommodationPage';
@@ -45,8 +46,8 @@ function App() {
          <Route path="/dashboard" element={<Dashboard />}/>
 
           {/* Protejăm ruta de Profil */}
-         <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
-
+         <Route path="/profile" element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" />} />
+         <Route path="/coordonator-profile" element={<CoordonatorProfile />} />
 
          ///Rute publice
           <Route path="/login" element={<LoginPage />} />

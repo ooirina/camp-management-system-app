@@ -7,7 +7,15 @@ const [showLoginMenu,setShowLoginMenu]=useState(false);
 const token = localStorage.getItem('token');
 const navigate =useNavigate();
 const userEmail=localStorage.getItem('userEmail');
+const userRole=localStorage.getItem('userRole');
 
+let caleCatreProfil='/user-profile';
+if(userRole ==='2')
+caleCatreProfil='/coordonator-profile';
+if(userRole ==='1')
+caleCatreProfil='/admin-profile';
+
+///logica de logare
 const handleLogout=()=>{
   localStorage.clear();
   navigate('login');
@@ -92,17 +100,18 @@ const handleLogout=()=>{
 
                            ):(
                            <>
-                          <li className="nav-item ms-lg-4">
-                          <Link className="nav-link active fw-bold text-info" to="/profile">
-                          Profilul meu
-                          </Link>
-                          </li>
-                          <li className="nav-item ms-lg-2">
-                                <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
-                            Logout
-                                </button>
-                        </li>
-                        </>
+                                 <li className="nav-item ms-lg-4">
+                                     {/* {caleCatreProfil} în loc de "/profile" pentru a stii ce tip de profil sa afiseze */}
+                                     <Link className="nav-link active fw-bold text-info" to={caleCatreProfil}>
+                                         Profilul meu
+                                     </Link>
+                                 </li>
+                                 <li className="nav-item ms-lg-2">
+                                     <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
+                                         Logout
+                                     </button>
+                                 </li>
+                              </>
                       )}
 
           </ul>
