@@ -72,15 +72,21 @@ function CampDetails() {
                         </>
                         ):(
                         <>
-                        <p className="text-danger fw-bold fs-5">Sold Out - Nu mai sunt locuri!</p>
-                             <div className="mb-3">
-                                 <label className="form-label text-muted">Data: {tabara.dataInceput}</label>
-                                   </div>
-                                    <button className="btn btn-secondary w-100 p-3 fs-5"
-                                        disabled >
-                                            Capacitate Maximă Atinsă
-                                            </button>
-                          </>
+                      {/* LOGICA PENTRU WAITLIST! */}
+
+                       <p className="text-warning text-dark fw-bold fs-5">
+                       ⏳ Sold Out - Te poți înscrie pe Waitlist!
+                       </p>
+                        <p className="small text-muted mb-2">
+                        Tabăra este plină, dar poți rezerva un loc în lista de așteptare. Dacă cineva renunță, te contactăm!
+                        </p>
+                        <div className="mb-3">
+                        <label className="form-label text-muted">Data start: {tabara.dataInceput}</label>
+                        </div>
+                         <button className="btn btn-warning text-dark w-100 p-3 fs-5 fw-bold shadow-sm" onClick={() => navigate(`/add-registration?tabaraId=${id}&numeTabara=${tabara.nume}`)} >
+                          Rezervă loc pe Waitlist
+                          </button>
+                         </>
                         )}
                     </div>
                 </div>

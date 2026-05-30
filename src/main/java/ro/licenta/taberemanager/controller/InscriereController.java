@@ -81,6 +81,25 @@ public class InscriereController {
     public Inscriere updateRegistration(@PathVariable Long id, @Valid @RequestBody Inscriere updatedRegistration){
         return repository.findById(id)
                 .map(registration->{
+
+                    //verificare daca vrea sa abrobe un Waitlist
+                    if ("WAITLIST".equals(registration.getStatut()) &&
+                            ("PENDING".equals(updatedRegistration.getStatut()) || "CONFIRMAT".equals(updatedRegistration.getStatut()))) {
+
+                        // Căutare manuala câți sunt PENDING sau CONFIRMAT în acea tabără
+                        long locuriOcupate = repository.findAll().stream()
+                                .filter(i -> i.getTabara() != null && i.getTabara().getId().equals(registration.getTabara().getId()))
+                                .filter(i -> "PENDING".equals(i.getStatut()) || "CONFIRMAT".equals(i.getStatut()))
+                                .count();
+
+                        long capacitateMaxima = registration.getTabara().getCapacitate().longValue();
+
+                        if (locuriOcupate >= capacitateMaxima) {
+                            throw new RuntimeException("Nu poți aproba! Tabăra este plină. Trebuie să anulezi un alt participant mai întâi.");
+                        }
+                    }
+
+
                     registration.setDataInscriere(updatedRegistration.getDataInscriere());
                     registration.setDataPlata(updatedRegistration.getDataPlata());
                     registration.setStatut(updatedRegistration.getStatut());
@@ -100,9 +119,12 @@ public class InscriereController {
                 .orElseThrow(()-> new RuntimeException("Tabara nu exista"));
 
         long inscrieriCurente = repository.countByTabaraId(tabaraVerificare.getId());
+       String statusInscriere="PENDING";//status default
 
         if (tabaraVerificare.getCapacitate().longValue() - inscrieriCurente <= 0) {
-            throw new RuntimeException("Eroare: Tabăra a atins capacitatea maximă!");
+          //daca s-au atins locurile maxime, nu se da eroare, ci il pune pe participant la waitlist
+            statusInscriere="WAITLIST";
+            System.out.println("Tabăra este plină. Participantul va fi pus pe WAITLIST.");
         }
 
 
@@ -131,7 +153,7 @@ public class InscriereController {
         // 2. Creăm înscrierea automată(legare participant de tabara)
         Inscriere i=new Inscriere();
         i.setDataInscriere(LocalDate.now());
-        i.setStatut("PENDING");
+        i.setStatut(statusInscriere);
         i.setSuma(BigDecimal.valueOf(dto.getSuma()));
         i.setDataPlata(LocalDate.now());
         i.setStatusPlata("NEPLATIT");
