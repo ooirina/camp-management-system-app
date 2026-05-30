@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const CoordinatorProfile = () => {
     const [activitati, setActivitati] = useState([]);
@@ -75,8 +76,9 @@ const CoordinatorProfile = () => {
             })
             .catch(err => {
                console.error("Eroare completă pentru programator:", err);
-               alert(" Nu poți aproba! Tabăra este plină. Trebuie să anulezi un alt participant mai întâi.");
-              });
+               toast.error("Nu poți aproba! Tabăra este plină. Trebuie să anulezi un alt participant mai întâi.");
+
+               });
 
       };
 

@@ -24,6 +24,8 @@ import AddCampForm from './components/AddCampForm';
 import AddTrailForm from './components/AddTrailForm';
 import AdminDashboard from './components/AdminDashboard';
 import 'leaflet/dist/leaflet.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   // OBSERVAȚIE: Am șters useEffect și axios de aici!
@@ -33,6 +35,7 @@ function App() {
   return (
     <Router>
     <Navbar />
+    <ToastContainer position="top-right" autoClose={3000} />
       <div className="container mt-5">
         {/* Putem pune aici un Navbar sau un titlu care să apară pe toate paginile */}
         <h1 className="text-center mb-4">Sistem Gestiune Tabere</h1>
