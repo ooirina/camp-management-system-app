@@ -48,6 +48,12 @@ public class ParticipantController {
     {
         return service.salveazaParticipant(participant);
     }
+
+       //Aducere lista de membrii ai familiei( copii) pentru un anumit user(parinte)
+    @GetMapping("/familie/{idUser}")
+    public List<Participant> getParticipantiByUserId(@PathVariable Long idUser){
+       return repository.findByIdUser(idUser);
+    }
     //Actualizare date participant
     @PutMapping("/{id}")
     @ResponseBody
@@ -57,6 +63,8 @@ public class ParticipantController {
                     participant.setNume(updatedParticipant.getNume());
                     participant.setPrenume(updatedParticipant.getPrenume());
                     participant.setDataNasterii(updatedParticipant.getDataNasterii());
+                    participant.setTelefon(updatedParticipant.getTelefon());
+                    participant.setGen(updatedParticipant.getGen());
                     participant.setAlergii(updatedParticipant.getAlergii());
                     participant.setProblemeMedicale(updatedParticipant.getProblemeMedicale());
                     participant.setContactUrgenta(updatedParticipant.getContactUrgenta());

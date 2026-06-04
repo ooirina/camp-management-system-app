@@ -49,7 +49,7 @@ function App() {
          <Route path="/dashboard" element={<Dashboard />}/>
 
           {/* Protejăm ruta de Profil */}
-         <Route path="/profile" element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" />} />
+         <Route path="/user-profile" element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" />} />
          <Route path="/coordonator-profile" element={<CoordonatorProfile />} />
 
          ///Rute publice

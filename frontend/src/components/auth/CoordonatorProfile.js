@@ -7,6 +7,7 @@ const CoordinatorProfile = () => {
     const [activitati, setActivitati] = useState([]);
     const [waitlist, setWaitlist]=useState([]);
     const [allTabere, setAllTabere]= useState([]);//ca sa fie acces la numele taberei
+    const [toateInscrierile, setToateInscrierile] = useState([]);//pentru calculuo matematic
     const [loading, setLoading] = useState(true);
 
     // Luăm email-ul celui logat
@@ -60,6 +61,24 @@ const CoordinatorProfile = () => {
          });
     }, [email]);
 
+     //functie care calculeaza locurile libere in timp real
+      const getLocuriDisponibile = (idTabara) => {
+              const tabara = allTabere.find(t => t.id === idTabara);
+              if (!tabara || !tabara.capacitate) return 0; // Dacă nu găsim tabăra, afișăm 0
+
+              // Numărăm câți copii au locul deja asigurat (PENDING sau CONFIRMAT) în acea tabără
+              const locuriOcupate = toateInscrierile.filter(insc => {
+                  const idTab = insc.tabara?.id || insc.idTabara;
+                  return idTab === idTabara && (insc.statut === 'PENDING' || insc.statut === 'CONFIRMAT');
+              }).length;
+
+              // Locuri libere = Capacitate totală - Ocupate
+              const locuriLibere = tabara.capacitate - locuriOcupate;
+
+              // Nu vrem să arătăm numere cu minus dacă am forțat noi baza de date
+              return locuriLibere > 0 ? locuriLibere : 0;
+          };
+
     //functia care "promoveaza" copilul de pe waitlist
     const handleAprobaLoc=(inscriere)=>{
        //pregatire obiectul actualizat cu noul status
@@ -70,10 +89,15 @@ const CoordinatorProfile = () => {
 
        axios.put(`http://localhost:8080/inscrieri/actualizare/${inscriere.id}`, inscriereActualizata)
            .then(()=>{
-           //scoatere copil din lista de asteptare de pe ecran
+           //scoatere copil din lista de asteptare
            setWaitlist(prev=> prev.filter(item => item.id !==inscriere.id));
-           alert(`✅ Loc aprobat cu succes pentru ${inscriere.participant.nume} ${inscriere.participant.prenume}!`);
-            })
+          //actualizare status copil in lista mare ca sa scada numarul de locuri libere live
+           setToateInscrierile(prev => prev.map(insc =>
+             insc.id === inscriere.id ? { ...insc, statut: 'PENDING' } : insc
+             ));
+
+             toast.success(`Loc aprobat cu succes pentru ${inscriere.participant.nume} ${inscriere.participant.prenume}!`);
+              })
             .catch(err => {
                console.error("Eroare completă pentru programator:", err);
                toast.error("Nu poți aproba! Tabăra este plină. Trebuie să anulezi un alt participant mai întâi.");
@@ -98,7 +122,7 @@ const CoordinatorProfile = () => {
                       </p>
                   </div>
 
-                  {/* ADAUGAT: ZONA DE WAITLIST (Apare doar daca sunt cereri in asteptare) */}
+                  {/*ZONA DE WAITLIST (Apare doar daca sunt cereri in asteptare) */}
                   {!loading && waitlist.length > 0 && (
                       <div className="card shadow-sm border-warning mb-5">
                           <div className="card-header bg-warning text-dark py-3 d-flex justify-content-between align-items-center">
@@ -116,12 +140,19 @@ const CoordinatorProfile = () => {
                                       </tr>
                                   </thead>
                                   <tbody>
-                                      {waitlist.map(insc => (
+                                      {waitlist.map(insc => {
+                                         const locuriLibere = getLocuriDisponibile(insc.tabara?.id);
+                                         return(
                                           <tr key={insc.id} className="align-middle">
                                               <td className="fw-bold text-primary">
                                                   {insc.participant?.nume} {insc.participant?.prenume}
                                               </td>
-                                              <td>{insc.tabara?.nume}</td>
+                                              <td>{insc.tabara?.nume}
+                                              {/* BADGE-UL CU LOCURI LIBERE */}
+                                                <span className={`badge ms-2 ${locuriLibere > 0 ? 'bg-success' : 'bg-danger'}`}>
+                                                {locuriLibere} locuri libere
+                                                </span>
+                                              </td>
                                               <td>{insc.dataInscriere}</td>
                                               <td className="text-end">
                                                   <button
@@ -132,14 +163,15 @@ const CoordinatorProfile = () => {
                                                   </button>
                                               </td>
                                           </tr>
-                                      ))}
+                                        );
+                                     })}
                                   </tbody>
                               </table>
                           </div>
                       </div>
                   )}
 
-                  {/* ZONA DE ORAR (PĂSTRATĂ EXACT CUM AI CERUT) */}
+                  {/* ZONA DE ORAR  */}
                   <div className="card shadow-sm border-primary">
                       <div className="card-header bg-primary text-white py-3">
                           <h4 className="mb-0">📅 Orarul meu de Activități</h4>
@@ -156,7 +188,9 @@ const CoordinatorProfile = () => {
                           ) : activitati.length > 0 ? (
 
                               <div className="row g-4">
-                                  {activitati.map((act) => (
+                                  {activitati.map((act) => {
+                                    const locuriLibere = getLocuriDisponibile(act.idTabara);
+                                   return (
                                       <div className="col-md-6 col-lg-4" key={act.id}>
                                           {/* CARD PENTRU FIECARE ACTIVITATE */}
                                           <div className="card h-100 border-0 shadow-sm rounded-3 hover-shadow transition">
@@ -167,6 +201,13 @@ const CoordinatorProfile = () => {
                                                   <ul className="list-unstyled mb-0" style={{ lineHeight: '2' }}>
                                                       <li>
                                                           <strong>🏕️ Tabăra:</strong> <span className="text-dark">{getNumeTabara(act.idTabara)}</span>
+                                                      </li>
+                                                      <li>
+                                                          <strong>🎟️ Disponibilitate:</strong>
+                                                          {/* BADGE-UL CU LOCURI LIBERE */}
+                                                           <span className={`badge ms-2 ${locuriLibere > 0 ? 'bg-success' : 'bg-danger'}`}>
+                                                            {locuriLibere} locuri libere
+                                                            </span>
                                                       </li>
                                                       <li>
                                                           <strong>📅 Data:</strong> <span className="text-dark">{act.data || 'Nespecificat'}</span>
@@ -187,7 +228,8 @@ const CoordinatorProfile = () => {
                                               </div>
                                           </div>
                                       </div>
-                                  ))}
+                                   )
+                                  })}
                               </div>
 
                     ) : (

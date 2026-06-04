@@ -43,7 +43,7 @@ public class SecurityConfig {
               //  .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/autentificare/**","/login/**","/oauth2/**","/tabere/**","/activitati/**","/utilizatori/**","/inscrieri/**","/prezenta/**", "/cazare/**", "/flux/**","/map/**","/trasee/**","/categorii/**").permitAll()
+                        .requestMatchers("/autentificare/**","/login/**","/oauth2/**","/tabere/**","/activitati/**","/utilizatori/**","/inscrieri/**","/prezenta/**", "/cazare/**", "/flux/**","/map/**","/trasee/**","/categorii/**", "/participanti/**").permitAll()
                         .anyRequest().authenticated() // PERMITEM TOT (provizoriu, pentru licență)
 
 
