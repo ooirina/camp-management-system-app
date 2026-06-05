@@ -7,7 +7,7 @@ import java.util.List;
 
 @Repository
 public interface ActivitateRepository extends JpaRepository<Activitate,Long> {
-    List<Activitate> findByIdTabaraOrderByDataAsc(Long idTabara);
+    List<Activitate> findByTabaraIdOrderByDataAsc(Long idTabara);
     // Spring Boot este atât de deștept încât va genera singur SQL-ul de căutare doar pe baza acestui nume!
     List<Activitate> findByCoordonatorId(Long idCoordonator);
 

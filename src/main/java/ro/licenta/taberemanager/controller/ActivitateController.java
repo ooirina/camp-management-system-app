@@ -1,8 +1,6 @@
 package ro.licenta.taberemanager.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import ro.licenta.taberemanager.model.Activitate;
@@ -61,7 +59,7 @@ public class ActivitateController {
                     activitate.setData(updatedActivitate.getData());
                     activitate.setLocatie(updatedActivitate.getLocatie());
                     activitate.setCapacitateMax(updatedActivitate.getCapacitateMax());
-                    activitate.setIdTabara(updatedActivitate.getIdTabara());
+                    activitate.setTabara(updatedActivitate.getTabara());
                     activitate.setOraInceput(updatedActivitate.getOraInceput());
                     activitate.setOraSfarsit(updatedActivitate.getOraSfarsit());
 
@@ -79,6 +77,6 @@ public class ActivitateController {
      /// metoda pentru itinerariu tabara
     @GetMapping("/tabara/{idTabara}")
     public List<Activitate> getItinerary(@PathVariable Long idTabara) {
-        return repository.findByIdTabaraOrderByDataAsc(idTabara);
+        return repository.findByTabaraIdOrderByDataAsc(idTabara);
     }
 }

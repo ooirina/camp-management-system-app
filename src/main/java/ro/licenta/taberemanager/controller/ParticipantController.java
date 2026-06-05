@@ -49,6 +49,20 @@ public class ParticipantController {
         return service.salveazaParticipant(participant);
     }
 
+    //panoul medical pentru coordonator general toate taberele lui
+    @GetMapping("/medical/{idCoordonator}")
+    @ResponseBody
+    public List<Participant> getPanouMedical(@PathVariable Long idCoordonator){
+        return repository.findParticipantiMedicalByCoordonator(idCoordonator);
+    }
+
+    //panou medical pentru coordonator pt o anumita tabara
+    @GetMapping("/medical/{idCoordonator}/tabara/{idTabara}")
+    @ResponseBody
+    public List<Participant> getPanouMedicalFiltrat(@PathVariable Long idCoordonator, @PathVariable Long idTabara){
+        return repository.findParticipantiMedicalByCoordonatorAndTabara(idCoordonator, idTabara);
+    }
+
        //Aducere lista de membrii ai familiei( copii) pentru un anumit user(parinte)
     @GetMapping("/familie/{idUser}")
     public List<Participant> getParticipantiByUserId(@PathVariable Long idUser){

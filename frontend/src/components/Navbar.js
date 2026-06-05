@@ -65,6 +65,12 @@ const handleLogout=()=>{
                 </ul>
             </li>
             <li className="nav-item">
+              <Link className="nav-link text-danger fw-bold" to="/panou-medical">
+                Panou Medical
+              </Link>
+            </li>
+
+            <li className="nav-item">
                     <Link className="nav-link" to="/register">Înregistrare</Link>
                 </li>
            {/* <li className="nav-item ms-lg-3">

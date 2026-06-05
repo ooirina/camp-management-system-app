@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const AccommodationPage = () => {
     const [tabere, setTabere] = useState([]);
-    const [selectedTabara, setSelectedTabara] = useState('');
+    const [selectedTabara, setSelectedTabara] = useState(localStorage.getItem('tabaraActivaId') || '');
     const [camere, setCamere] = useState([]);//stare initiala array gol
     const [nealocati, setNealocati] = useState([]);
     const [filtre, setFiltre] = useState({ gen: '', varsta: '' });
@@ -12,7 +12,13 @@ const AccommodationPage = () => {
     const [editingCameraId, setEditingCameraId]= useState(null);
 
     useEffect(() => {
-        axios.get('http://localhost:8080/tabere/lista').then(res => setTabere(res.data));
+        axios.get('http://localhost:8080/tabere/lista')
+             .then(res => setTabere(res.data));
+        // Aducere automat camerele și participanții dacă tabăra e pre-selectată
+         const tabaraSalvata = localStorage.getItem('tabaraActivaId');
+         if (tabaraSalvata) {
+              fetchDateCazare(tabaraSalvata);
+                }
     }, []);
 
 

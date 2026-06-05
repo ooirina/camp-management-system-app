@@ -9,6 +9,7 @@ const CoordinatorProfile = () => {
     const [allTabere, setAllTabere]= useState([]);//ca sa fie acces la numele taberei
     const [toateInscrierile, setToateInscrierile] = useState([]);//pentru calculuo matematic
     const [loading, setLoading] = useState(true);
+    const [tabaraActivaId, setTabaraActivaId]=useState(localStorage.getItem('tabaraActivaId') || '');//pentru tabara aleasa de coordonator pt sincronizarea aplicatiei
 
     // Luăm email-ul celui logat
     const email = localStorage.getItem('userEmail');
@@ -34,8 +35,8 @@ const CoordinatorProfile = () => {
                                  // Extragem ID-urile taberelor de care se ocupă el
                                  const idUriTabere = new Set();
                                  activitatiPermise.forEach(act => {
-                                     if (act.idTabara)
-                                     idUriTabere.add(act.idTabara);
+                                     if (act.tabara?.id)
+                                     idUriTabere.add(act.tabara?.id);
                                  });
 
                                  // 2. Aducem toate înscrierile ca să extragem Waitlist-ul
@@ -68,8 +69,8 @@ const CoordinatorProfile = () => {
 
               // Numărăm câți copii au locul deja asigurat (PENDING sau CONFIRMAT) în acea tabără
               const locuriOcupate = toateInscrierile.filter(insc => {
-                  const idTab = insc.tabara?.id || insc.idTabara;
-                  return idTab === idTabara && (insc.statut === 'PENDING' || insc.statut === 'CONFIRMAT');
+                  const idTab = insc.tabara?.id || insc.tabara?.id;
+                  return idTab === tabara?.id && (insc.statut === 'PENDING' || insc.statut === 'CONFIRMAT');
               }).length;
 
               // Locuri libere = Capacitate totală - Ocupate
@@ -112,6 +113,26 @@ const CoordinatorProfile = () => {
        return tabara ? tabara.nume : 'Nespecificat';
        };
 
+       const handleSetTabaraActiva=(e) =>{
+          const idSelectat =e.target.value;
+          const numeTabara =e.target.options[e.target.selectedIndex].text;
+
+          if(idSelectat){
+            localStorage.setItem('tabaraActivaId', idSelectat);
+            localStorage.setItem('tabaraActivaNume', numeTabara);
+            setTabaraActivaId(idSelectat);
+            toast.success( `Context schimbat! Ești activ în: ${numeTabara}`);
+          }
+          else{
+            //daca selecteaza optiunea goala, se curata memoria
+            localStorage.removeItem('tabaraActivaId');
+            localStorage.removeItem('tabaraActivaNume');
+            setTabaraActivaId('');
+            toast.info("Ai debifat tabăra activă.");
+
+          }
+       };
+
       return (
              <div className="container mt-5 mb-5">
                   {/* ZONA DE HEADER */}
@@ -120,6 +141,34 @@ const CoordinatorProfile = () => {
                       <p className="lead text-muted">
                           Bine ai venit, <strong>{email}</strong>! Acesta este orarul tău pentru taberele viitoare.
                       </p>
+                  </div>
+                  {/* SETARE TABĂRĂ ACTIVĂ (GLOBAL CONTEXT) */}
+                  <div className="d-flex justify-content-center mb-5">
+                      <div className="card shadow-sm border-success bg-success bg-opacity-10" style={{ maxWidth: '500px', width: '100%' }}>
+                          <div className="card-body text-center p-3">
+                              <h6 className="text-success fw-bold mb-2"> În ce tabără te afli acum?</h6>
+                              <select
+                                  className="form-select border-success shadow-sm"
+                                  value={tabaraActivaId}
+                                  onChange={handleSetTabaraActiva}
+                              >
+                                  <option value="">-- Nu sunt într-o tabără specifică --</option>
+                                  {/* Folosim taberele unice pe care le extrăsesem anterior pentru orar */}
+                                  {Array.from(new Set(activitati.map(act => act.tabara?.id)))
+                                      .map(id => activitati.find(act => act.tabara?.id === id)?.tabara)
+                                      .filter(tabara => tabara !== undefined)
+                                      .map(tabara => (
+                                          <option key={tabara.id} value={tabara.id}>
+                                              {tabara.nume}
+                                          </option>
+                                      ))
+                                  }
+                              </select>
+                              <small className="text-muted mt-2 d-block">
+                                  Această alegere va fi salvată și folosită automat în Cataloage, Panou Medical etc.
+                              </small>
+                          </div>
+                      </div>
                   </div>
 
                   {/*ZONA DE WAITLIST (Apare doar daca sunt cereri in asteptare) */}
@@ -189,7 +238,7 @@ const CoordinatorProfile = () => {
 
                               <div className="row g-4">
                                   {activitati.map((act) => {
-                                    const locuriLibere = getLocuriDisponibile(act.idTabara);
+                                    const locuriLibere = getLocuriDisponibile(act.tabara?.id);
                                    return (
                                       <div className="col-md-6 col-lg-4" key={act.id}>
                                           {/* CARD PENTRU FIECARE ACTIVITATE */}
@@ -200,7 +249,7 @@ const CoordinatorProfile = () => {
                                                   </h5>
                                                   <ul className="list-unstyled mb-0" style={{ lineHeight: '2' }}>
                                                       <li>
-                                                          <strong>🏕️ Tabăra:</strong> <span className="text-dark">{getNumeTabara(act.idTabara)}</span>
+                                                          <strong>🏕️ Tabăra:</strong> <span className="text-dark">{getNumeTabara(act.tabara?.id)}</span>
                                                       </li>
                                                       <li>
                                                           <strong>🎟️ Disponibilitate:</strong>

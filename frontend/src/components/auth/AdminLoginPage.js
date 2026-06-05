@@ -23,6 +23,7 @@ function AdminLoginPage() {
                 localStorage.setItem('userEmail', email);
                 localStorage.setItem('token', data.jwt);//salvare token daca nu e deja salvat in Autoservice
                 localStorage.setItem('userRole', data.role);// rolul pe care il are deja in bd
+                 localStorage.setItem('userId', data.id);//id ul userului
                 navigate('/admin/dashboard'); // Dacă e OK, mergem la pagina principală
                 window.location.reload();
             }

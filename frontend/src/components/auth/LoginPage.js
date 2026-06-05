@@ -17,10 +17,12 @@ function LoginPage() {
         try {
             // Trimitem datele la Java prin  AuthService.login
             const data = await AuthService.login(loginCredentials);
+
             if (data.status && data.jwt) {
                 localStorage.setItem('userEmail', email);
                 localStorage.setItem('token', data.jwt);//salvare token daca nu e deja salvat in Autoservice
                 localStorage.setItem('userRole', data.role);// rolul pe care il are deja in bd
+                localStorage.setItem('userId', data.id);//id ul userului
                 navigate('/dashboard'); // Dacă e OK, mergem la pagina principală
                 window.location.reload();
             }

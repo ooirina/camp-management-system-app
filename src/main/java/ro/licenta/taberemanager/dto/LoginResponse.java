@@ -15,4 +15,5 @@ public class LoginResponse {
     private boolean status;
     private String role;
     private String email;
+    private Long id;
 }

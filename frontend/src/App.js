@@ -1,6 +1,8 @@
 import React from 'react';
 // 1. Importăm rutarea (necesară pentru a naviga între pagini)
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
+import axios from 'axios';
 // 2. Importăm noua ta componentă creată separat
 import CampList from './components/CampList';
 import ActivityList from './components/ActivityList';
@@ -23,9 +25,28 @@ import CampsMapPage from './components/CampsMapPage';
 import AddCampForm from './components/AddCampForm';
 import AddTrailForm from './components/AddTrailForm';
 import AdminDashboard from './components/AdminDashboard';
+import PanouMedical from './components/PanouMedical';
 import 'leaflet/dist/leaflet.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+
+///in caz ca tokenul expira
+axios.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      if (localStorage.getItem('userEmail') || localStorage.getItem('token')) {
+        alert(" Sesiunea a expirat din motive de securitate. Te rugăm să te conectezi din nou!");
+        localStorage.clear();
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 function App() {
   // OBSERVAȚIE: Am șters useEffect și axios de aici!
@@ -71,6 +92,7 @@ function App() {
            <Route path="/admin/adauga-tabara" element={<AddCampForm />} />
            <Route path="/admin/adauga-traseu" element={<AddTrailForm />} />
            <Route path="/admin/dashboard" element={<AdminDashboard/>} />
+           <Route path="/panou-medical" element={<PanouMedical />} />
         </Routes>
       </div>
     </Router>

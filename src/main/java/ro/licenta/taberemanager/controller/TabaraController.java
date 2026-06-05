@@ -40,6 +40,12 @@ public class TabaraController {
         return repository.findById(id)
                 .orElseThrow(()->new RuntimeException("Tabrara nu a fost gasita"));
     }
+
+    @GetMapping("/coordonator/{idCoordonator}")
+    @ResponseBody
+    public List<Tabara> getTabereCoordonator(@PathVariable Long idCoordonator) {
+        return repository.findTabereByCoordonator(idCoordonator); // folosește repository-ul tău de tabere aici
+    }
     //PAginare taberelor
     @GetMapping("/paginat")
     @ResponseBody

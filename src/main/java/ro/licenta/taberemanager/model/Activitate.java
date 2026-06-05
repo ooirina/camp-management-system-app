@@ -1,5 +1,6 @@
 package ro.licenta.taberemanager.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import  lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,8 +35,10 @@ public class Activitate {
     @Column(name="capacitate_maxima")
     private BigDecimal capacitateMax;
     @NotNull
-    @Column(name="id_tabara")
-    private BigDecimal idTabara;
+    @ManyToOne
+    @JoinColumn(name="id_tabara")
+    @JsonIgnoreProperties({"activitati", "inscrieri", "hibernateLazyInitializer", "handler"})
+    private Tabara tabara;
     @ManyToOne
     @JoinColumn(name = "id_coordonator")
     private User coordonator;

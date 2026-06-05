@@ -51,7 +51,7 @@ public class AuthService {
 
 
         //4. Construim raspunsul
-        return new LoginResponse(jwt, "Logare reușită", true, numeRol,user.getEmail());
+        return new LoginResponse(jwt, "Logare reușită", true, numeRol,user.getEmail(),user.getId());
     }
 
     public String register(User userNou){

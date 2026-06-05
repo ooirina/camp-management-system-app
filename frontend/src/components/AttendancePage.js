@@ -6,7 +6,7 @@ const AttendancePage = () => {
     const [activitati, setActivitati] = useState([]);
     const [activitatiCoordonator, setActivitatiCoordonator]=useState([]);
     const [participanti, setParticipanti] = useState([]);
-    const [selectedTabara, setSelectedTabara] = useState('');
+    const [selectedTabara, setSelectedTabara] = useState(localStorage.getItem('tabaraActivaId') || '');
     const [selectedActivitate, setSelectedActivitate] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -27,8 +27,8 @@ const AttendancePage = () => {
          const idUriTabere=new Set();
          activitatiPermise.forEach(act=>{
          // Dacă activitatea are o tabără asociată și nu am mai adăugat-o deja
-         if(act.idTabara){
-               idUriTabere.add(act.idTabara);
+         if(act.tabara && act.tabara.id){
+               idUriTabere.add(act.tabara.id);
 
          }
          });
@@ -50,6 +50,20 @@ const AttendancePage = () => {
 
 
     }, []);
+
+
+    //Autocompletare activitati cand se incarca pagina cu o tabara activa din profilul coordontatorului
+         useEffect(()=>{
+            if(selectedTabara && activitatiCoordonator.length >0){
+              const activitatiFiltrate = activitatiCoordonator.filter(
+                 act=> act.tabara && act.tabara.id.toString() === selectedTabara.toString()
+              );
+                setActivitati(activitatiFiltrate);
+            }
+
+         }, [selectedTabara, activitatiCoordonator]);
+
+
 //cand se alege tabara
     const handleTabaraChange = (e) => {
         const id = e.target.value;
@@ -66,7 +80,7 @@ const AttendancePage = () => {
         //se filtreaza pe cele care apartin de tabara selectata
         //cautare activitățile care au "idTabara" egal cu id-ul selectat
         const activitatiFiltrate= activitatiCoordonator.filter(
-        act=> act.idTabara && act.idTabara.toString()=== id.toString()
+        act=> act.tabara && act.tabara.id.toString()=== id.toString()
         );
         setActivitati(activitatiFiltrate);//populare al doilea dropdown
         }

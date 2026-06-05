@@ -3,13 +3,22 @@ import axios from 'axios';
 
 const CheckInOutPage = () => {
     const [tabere, setTabere] = useState([]);
-    const [selectedTabara, setSelectedTabara] = useState('');
+    const [selectedTabara, setSelectedTabara] = useState(localStorage.getItem('tabaraActivaId') ||'');
     const [participanti, setParticipanti] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         axios.get('http://localhost:8080/tabere/lista').then(res => setTabere(res.data));
+
+     // Dacă avem o tabără activă salvată, aducem automat participanții pentru ea
+             const tabaraSalvata = localStorage.getItem('tabaraActivaId');
+             if (tabaraSalvata) {
+                 fetchStatusParticipanti(tabaraSalvata);
+             }
+
     }, []);
+
+
 
     const fetchStatusParticipanti = (idTabara) => {
         if (!idTabara) return;
@@ -20,7 +29,14 @@ const CheckInOutPage = () => {
      };
 
     // Aceasta este singura funcție de care ai nevoie pentru butoane
-    const handleAction = (id, action) => {
+    const handleAction = (id, action,participantName = '') => {
+
+         // Confirmare pentru check-in
+             if ( action === 'checkin' && !window.confirm( `Ești sigur(ă) că vrei să marchezi check-in-ul pentru ${participantName}?`)
+             ) {
+                 return;
+             }
+
         // Dacă e checkout, cerem confirmare
         if (action === 'checkout' && !window.confirm("Confirmi plecarea definitivă a participantului?")) {
             return;
@@ -106,7 +122,7 @@ const CheckInOutPage = () => {
                                 </td>
                                 <td className="text-center">
                                     {!ins.dataCheckin && (
-                                        <button className="btn btn-success btn-sm" onClick={() => handleAction(ins.id, 'checkin')}>
+                                        <button className="btn btn-success btn-sm" onClick={() => handleAction(ins.id, 'checkin',  `${ins.participant.nume} ${ins.participant.prenume}`)}>
                                             ✅ Check-in
                                         </button>
                                     )}
