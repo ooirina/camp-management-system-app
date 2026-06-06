@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import ro.licenta.taberemanager.repository.ParticipantRepository;
 import ro.licenta.taberemanager.repository.TabaraRepository;
 import ro.licenta.taberemanager.repository.UserRepository;
+import ro.licenta.taberemanager.service.WaitlistEmailService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -31,12 +32,14 @@ public class InscriereController {
     private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
     private final TabaraRepository tabaraRepository;
+    private final WaitlistEmailService waitlistEmailService;
 
-    public InscriereController(InscriereRepository repository,ParticipantRepository participantRepository,UserRepository userRepository,TabaraRepository tabaraRepository){
+    public InscriereController(InscriereRepository repository,ParticipantRepository participantRepository,UserRepository userRepository,TabaraRepository tabaraRepository, WaitlistEmailService waitlistEmailService){
         this.repository=repository;
         this.participantRepository = participantRepository;
         this.userRepository = userRepository;
         this.tabaraRepository=tabaraRepository;
+        this.waitlistEmailService=waitlistEmailService;
 
     }
 
@@ -82,6 +85,10 @@ public class InscriereController {
         return repository.findById(id)
                 .map(registration->{
 
+                    // Se verifica si se memoreaza dacă se face trecerea din Waitlist în Pending
+                    boolean approvedFromWaitlist = "WAITLIST".equals(registration.getStatut()) &&
+                            "PENDING".equals(updatedRegistration.getStatut());
+
                     //verificare daca vrea sa abrobe un Waitlist
                     if ("WAITLIST".equals(registration.getStatut()) &&
                             ("PENDING".equals(updatedRegistration.getStatut()) || "CONFIRMAT".equals(updatedRegistration.getStatut()))) {
@@ -108,7 +115,17 @@ public class InscriereController {
                     registration.setStatusPlata(updatedRegistration.getStatusPlata());
                     registration.setParticipant(updatedRegistration.getParticipant());
                     registration.setTabara(updatedRegistration.getTabara());
-                    return repository.save(registration);
+
+                    //salvare obiectul în baza de date și se pastreaza într-o variabilă
+                    Inscriere savedRegistration = repository.save(registration);
+
+                    // apelare serviciul de email doar dacă a fost aprobat
+                    if (approvedFromWaitlist) {
+                        waitlistEmailService.sendWaitlistApprovalEmail(savedRegistration.getId());
+                    }
+
+                    // returnare obiectul salvat
+                    return savedRegistration;
                 })
                 .orElseThrow(()-> new RuntimeException("Utilizatorul nu a fost gasit"));
     }

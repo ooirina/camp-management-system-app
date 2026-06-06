@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ro.licenta.taberemanager.model.Inscriere;
 import ro.licenta.taberemanager.repository.InscriereRepository;
+import ro.licenta.taberemanager.service.CheckInEmailService;
+import ro.licenta.taberemanager.service.CheckOutEmailService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +19,12 @@ public class CheckInOutController {
 
     @Autowired
     private InscriereRepository inscriereRepository;
+
+    @Autowired
+    private CheckInEmailService checkInEmailService;
+
+    @Autowired
+    private CheckOutEmailService checkOutEmailService;
 
     @GetMapping("/participanti/tabara/{idTabara}")
     public List<Inscriere> getParticipantiTabara(@PathVariable Long idTabara) {
@@ -31,6 +39,8 @@ public class CheckInOutController {
              //status daca e sosit sau nu
              ins.setStatusSosire("SOSIT");
              inscriereRepository.save(ins);
+             //trimite email dinamic dupa actulaizare baza de date
+             checkInEmailService.sendEmailIfMinor(id);
              return  ResponseEntity.ok().build();
          }).orElse(ResponseEntity.notFound().build());
 
@@ -44,6 +54,8 @@ public class CheckInOutController {
        ins.setDataCheckout(LocalDateTime.now());
        ins.setStatusSosire("PLECAT");
        inscriereRepository.save(ins);
+       //Apelare servicu dedicat pentru email de plecare
+       checkOutEmailService.sendCheckoutEmailIfMinor(id);
        return ResponseEntity.ok().build();
     }).orElse(ResponseEntity.notFound().build());
      }
