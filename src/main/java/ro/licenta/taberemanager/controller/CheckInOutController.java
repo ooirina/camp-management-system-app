@@ -8,6 +8,9 @@ import ro.licenta.taberemanager.model.Inscriere;
 import ro.licenta.taberemanager.repository.InscriereRepository;
 import ro.licenta.taberemanager.service.CheckInEmailService;
 import ro.licenta.taberemanager.service.CheckOutEmailService;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -60,5 +63,38 @@ public class CheckInOutController {
     }).orElse(ResponseEntity.notFound().build());
      }
 
+    ///Raposrt CSV
+    @GetMapping(value = "/raport/csv/{idTabara}", produces ="text/csv")
+    public void genereazaRaportCSV(@PathVariable Long idTabara, HttpServletResponse response ) throws IOException{
+           /// Setare format fisier pentru descarcare
+        response.setContentType("text/csv; charset=utf-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"raport_tabara_" + idTabara + ".csv\"");
 
-}
+        //Aducere doar particpinatii confiramti si platiti
+        List<Inscriere> inscrieri= inscriereRepository.findByTabaraIdAndStatutAndStatusPlata(idTabara, "CONFIRMAT","PLATIT");
+        PrintWriter writer=response.getWriter();
+        //Adaugare BOM( Byte Order MArk) ca Excel sa citeasca corecr diacriticile
+        writer.write('\ufeff');
+        //Scriere capul de tabel (numele colaonelor, separate prin virgula)
+        writer.println("Nume,Prenume,Gen,Telefon,Contact Urgenta,Alergii, Status Sosire");
+        /// Parcurgere lissta si scrierer fiecare participant pe un rand nou
+        for(Inscriere i: inscrieri){
+            String nume=i.getParticipant().getNume() !=null ? i.getParticipant().getNume():"-";
+            String prenume = i.getParticipant().getPrenume() != null ? i.getParticipant().getPrenume() : "-";
+            String gen = i.getParticipant().getGen() != null ? i.getParticipant().getGen() : "-";
+            String tel = i.getParticipant().getTelefon() != null ? i.getParticipant().getTelefon() : "-";
+            String urgenta = i.getParticipant().getContactUrgenta() != null ? i.getParticipant().getContactUrgenta() : "-";
+            String alergii = i.getParticipant().getAlergii() != null ? i.getParticipant().getAlergii() : "-";
+            String statusSosire = i.getStatusSosire() != null ? i.getStatusSosire() : "NEOSIT";
+
+            writer.println(nume + "," + prenume + "," + gen + "," + tel + "," + urgenta + "," + alergii + "," + statusSosire);
+        }
+         writer.flush();
+        }
+
+
+    }
+
+
+
+

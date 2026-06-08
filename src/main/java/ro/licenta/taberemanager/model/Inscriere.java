@@ -39,6 +39,8 @@ public class Inscriere {
     @Column(name="status_plata")
     private String statusPlata;
 
+    private String documentMedical;
+
     @NotNull
     @ManyToOne
     @JoinColumn(name="id_tabara")

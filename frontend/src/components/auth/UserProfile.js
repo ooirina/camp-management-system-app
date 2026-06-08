@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import QRCode from 'react-qr-code';
 
 function Profile(){
   const navigate= useNavigate();
@@ -23,6 +24,7 @@ function Profile(){
   const [isEditing, setIsEditing] = useState(false); // Schimbă din mod Adăugare în mod Editare
   const [editingId, setEditingId] = useState(null); // Reține ID-ul membrului pe care îl edităm
 
+  const [qrOpen, setQrOpen] = useState(null); // Memorează ID-ul înscrierii pentru care arătăm QR
 
    useEffect(()=>{
      const fetchUserData= async()=>{
@@ -208,6 +210,58 @@ const handleStergereMembru = async(idMembru, prenumeMembru)=>{
       };
     };
 
+    const handleDownloadFactura = async (idInscriere) => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await axios.get(`http://localhost:8080/inscrieri/factura/${idInscriere}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            responseType: 'blob', // Așteptăm un PDF
+          });
+
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', `Factura_${idInscriere}.pdf`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } catch (error) {
+          console.error("Eroare la descărcarea facturii:", error);
+          alert("A apărut o eroare la descărcarea PDF-ului.");
+        }
+      };
+
+      const handleFileUpload= async(event, idInscriere)=>{
+          const file= event.target.files[0];
+          if(!file)
+             return;
+          //folosire
+          const formData =new FormData();
+          formData.append("file",file);
+
+          try{
+             const token =localStorage.getItem('token');
+             await axios.post(`http://localhost:8080/inscrieri/upload-document/${idInscriere}`, formData, {
+                  headers:{
+                    Authorization:`Bearer ${token}`,
+                    'Content-Type':'multipart/form-data'
+
+                   }
+
+             });
+
+             alert("Document medical încărcat cu succes!");
+             window.location.reload()//actualizare paginii instanta
+
+          }  catch(error)
+             {
+                console.error("Eroare la încărcare:", error);
+                 alert("A apărut o eroare la încărcarea documentului.");
+             }
+
+        }
+
+
   return(
   <div className="container mt-5">
         {/* HEADER PROFIL */}
@@ -257,11 +311,29 @@ const handleStergereMembru = async(idMembru, prenumeMembru)=>{
                               {ins.statusPlata}
                             </span>
                           </td>
-                          <td>
-                            <button className="btn btn-sm btn-outline-danger fw-bold" onClick={() => handleStergere(ins.id)}>
-                              ❌ Anulează
-                            </button>
-                          </td>
+
+                          <td className="d-flex gap-2">
+                                <button className="btn btn-sm btn-outline-primary fw-bold" onClick={() => handleDownloadFactura(ins.id)}>
+                                   📄 Factură
+                                </button>
+                                <button className="btn btn-sm btn-dark fw-bold text-white" onClick={() => setQrOpen(ins.id)}>
+                                   Ecuson QR
+                                </button>
+                                <button className="btn btn-sm btn-outline-danger fw-bold" onClick={() => handleStergere(ins.id)}>
+                                   ❌ Anulează
+                                </button>
+                              </td>
+                              {/* Buton ascuns pentru fisier, activat de label-ul de mai jos */}
+                                  <input
+                                     type="file"
+                                     id={`upload-${ins.id}`}
+                                     style={{ display: 'none' }}
+                                     onChange={(e) => handleFileUpload(e, ins.id)}
+                                     accept=".pdf,.jpg,.png"
+                                  />
+                                  <label htmlFor={`upload-${ins.id}`} className="btn btn-sm btn-outline-success fw-bold mb-0">
+                                     ⚕️ Încarcă Fişă
+                                  </label>
                         </tr>
                       ))
                     ) : (
@@ -404,6 +476,25 @@ const handleStergereMembru = async(idMembru, prenumeMembru)=>{
              </div>
 
            </div>
+
+           {qrOpen && (
+                   <div className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style={{ backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 9999 }}>
+                     <div className="bg-white p-4 rounded text-center shadow-lg">
+                       <h3 className="mb-3 fw-bold text-success">Ecuson Check-in</h3>
+                       <p className="text-muted">Prezintă acest cod coordonatorului la autocar.</p>
+
+                       <div className="bg-light p-3 rounded mb-3 border">
+                         {/* Generează vizual codul QR pe baza ID-ului */}
+                         <QRCode value={qrOpen.toString()} size={200} />
+                       </div>
+
+                       <button className="btn btn-danger w-100 fw-bold" onClick={() => setQrOpen(null)}>
+                         Închide
+                       </button>
+                     </div>
+                   </div>
+                 )}
+
          </div>
        );
      }

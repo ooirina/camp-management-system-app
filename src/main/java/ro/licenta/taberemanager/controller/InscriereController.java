@@ -18,6 +18,17 @@ import ro.licenta.taberemanager.repository.ParticipantRepository;
 import ro.licenta.taberemanager.repository.TabaraRepository;
 import ro.licenta.taberemanager.repository.UserRepository;
 import ro.licenta.taberemanager.service.WaitlistEmailService;
+import com.lowagie.text.Document;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfWriter;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.HttpStatus;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.File;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -224,5 +235,69 @@ public class InscriereController {
     {
         return repository.findDetailedInscrieri(idPlatitor);
     }
-    
+
+
+    @GetMapping(value = "/factura/{id}", produces = "application/pdf")
+    public void genereazaFacturaPDF(@PathVariable Long id, HttpServletResponse response) throws IOException {
+        Inscriere inscriere = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Inscrierea nu exista"));
+
+        // Setăm browserul să știe că primește un PDF
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=\"factura_inscriere_" + id + ".pdf\"");
+
+        // Deschidem o "foaie" albă
+        Document document = new Document();
+        PdfWriter.getInstance(document, response.getOutputStream());
+
+        document.open();
+
+        // Desenăm textul pe foaie
+        document.add(new Paragraph("FACTURA PROFORMA - SISTEM TABERE"));
+        document.add(new Paragraph("--------------------------------------------------"));
+        document.add(new Paragraph("Numar Inscriere: #" + inscriere.getId()));
+        document.add(new Paragraph("Tabara: " + inscriere.getTabara().getNume()));
+        document.add(new Paragraph("Participant: " + inscriere.getParticipant().getNume() + " " + inscriere.getParticipant().getPrenume()));
+        document.add(new Paragraph("Suma de plata: " + inscriere.getSuma() + " RON"));
+        document.add(new Paragraph("Status Plata: " + inscriere.getStatusPlata()));
+        document.add(new Paragraph("Data Inscriere: " + inscriere.getDataInscriere()));
+        document.add(new Paragraph("--------------------------------------------------"));
+        document.add(new Paragraph("Va multumim pentru inscriere!"));
+
+        document.close();
+    }
+
+    @PostMapping("/upload-document/{id}")
+    public ResponseEntity <String> uploadDocument(@PathVariable Long id, @RequestParam("file") MultipartFile file){
+
+         try{
+             Inscriere inscriere =repository.findById(id)
+                     .orElseThrow(()-> new RuntimeException("Inscrierea nu exista"));
+           //se defineste unde se salveaza fisierele(care e folserul uploads din proeict
+             String uploadDir =System.getProperty("user.dir")+ "/uploads/";
+             File directory = new File(uploadDir);
+             if(!directory.exists()){
+                 directory.mkdir();//se creeaza folderul daca nu exista
+
+             }
+
+             /// curatare numele  fisierului si il salvam
+           String fileName= "Med_" +id + "_"+file.getOriginalFilename().replace(" ","_");
+           Path filePath =Paths.get(uploadDir+ fileName);
+           Files.write(filePath, file.getBytes());
+
+           //Salvare doar numele in baza de date
+             inscriere.setDocumentMedical(fileName);
+             repository.save(inscriere);
+
+             return ResponseEntity.ok("Fisier salvat cu succes!");
+         }
+         catch(Exception e)
+         {
+             e.printStackTrace();
+             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Eroare la salvarea fisierului.");
+         }
+
+    }
+
 }
