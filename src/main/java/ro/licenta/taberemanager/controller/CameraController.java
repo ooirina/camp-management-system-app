@@ -35,7 +35,9 @@ public class CameraController {
     // 3. Participanții "nealocați" (id_camera IS NULL) pentru o tabara
     @GetMapping("/participanti/nealocati/{idTabara}")
     public List<Inscriere> getNealocati(@PathVariable Long idTabara) {
-        return inscriereRepository.findByTabaraIdAndCameraIsNull(idTabara);
+        return inscriereRepository.findByTabaraIdAndCameraIsNull(idTabara).stream()
+                                  .filter(ins -> "CONFIRMAT".equals(ins.getStatut()) && "PLATIT".equals(ins.getStatusPlata()))
+                                  .toList();
     }
 
     // 4. Logica de alocare: Muta un participant intr-o camera

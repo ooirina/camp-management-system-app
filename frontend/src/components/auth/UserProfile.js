@@ -237,6 +237,7 @@ const handleStergereMembru = async(idMembru, prenumeMembru)=>{
                   <thead className="table-light">
                     <tr>
                       <th>Tabăra</th>
+                      <th> Participant</th>
                       <th>Data Înscriere</th>
                       <th>Sumă</th>
                       <th>Status</th>
@@ -248,6 +249,7 @@ const handleStergereMembru = async(idMembru, prenumeMembru)=>{
                       inscrieri.map((ins) => (
                         <tr key={ins.id} className="align-middle">
                           <td className="fw-bold text-dark">{ins.numeTabara}</td>
+                         <td className="text-primary">{ins.numeParticipant} {ins.prenumeParticipant}</td>
                           <td>{new Date(ins.dataInscriere).toLocaleDateString()}</td>
                           <td><span className="text-success fw-bold">{ins.suma} RON</span></td>
                           <td>

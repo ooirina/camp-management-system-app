@@ -150,8 +150,23 @@ public class InscriereController {
         User user= userRepository.findByEmail(dto.getEmailUtilizator()).orElseThrow();
 
         System.out.println("DEBUG: Java a găsit în DB Userul: " + user.getEmail() + " cu ID: " + user.getId());
+
+        Participant p;
+
+        // Verificăm dacă React ne-a trimis un ID de participant existent (din dropdown)
+        if (dto.getIdParticipant() != null) {
+            System.out.println("S-a selectat un participant existent cu ID: " + dto.getIdParticipant());
+            // Îl extragem din baza de date
+            p = participantRepository.findById(dto.getIdParticipant())
+                    .orElseThrow(() -> new RuntimeException("Participantul selectat nu există în DB!"));
+        } else {
+            System.out.println("Se creează un participant complet NOU.");
+            // Doar dacă nu avem ID, creăm unul nou
+            p = new Participant();
+        }
+
+        // Actualizăm sau setăm datele (în caz că părintele a schimbat un număr de telefon în formular)
         // 1. salveaza mai întâi participantul-toate datele
-        Participant p = new Participant();
         p.setNume(dto.getNumeParticipant());
         p.setPrenume(dto.getPrenumeParticipant());
         p.setDataNasterii(dto.getDataNasterii());
@@ -160,9 +175,9 @@ public class InscriereController {
         p.setAlergii(dto.getAlergii());
         p.setProblemeMedicale(dto.getProblemeMedicale());
         p.setContactUrgenta(dto.getContactUrgenta());
-
-
         p.setIdUser(user.getId());
+
+        //salvare :daca e nou , i se da un id nou, dar daca  exista, doar face UPDATE la late
         Participant participantSalvat = participantRepository.save(p);
 
         System.out.println("✅ Participant salvat cu ID: " + participantSalvat.getId());

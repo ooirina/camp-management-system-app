@@ -13,14 +13,15 @@ import java.util.List;
 
 public interface InscriereRepository extends JpaRepository<Inscriere,Long> {
   /// join intre inscriere si tabere pt istoric
-  @Query( "SELECT new  ro.licenta.taberemanager.dto.InscriereDetaliiDTO(i.id,t.nume, i.dataInscriere, i.suma, i.statusPlata)"+
-  " FROM Inscriere i JOIN i.tabara t "+" WHERE i.idPlatitor =:idPlatitor"+" ORDER BY i.id DESC")
+  @Query( "SELECT new  ro.licenta.taberemanager.dto.InscriereDetaliiDTO(i.id,t.nume, i.dataInscriere, i.suma, i.statusPlata, p.nume, p.prenume)"+
+  " FROM Inscriere i JOIN i.tabara t JOIN i.participant p"+" WHERE i.idPlatitor =:idPlatitor"+" ORDER BY i.id DESC")
 
   List<InscriereDetaliiDTO> findDetailedInscrieri(@Param("idPlatitor") Long idPlatitor);
     List<Inscriere> findByTabaraIdAndCameraIsNull(Long idTabara);
     List<Inscriere> findByTabaraId(Long idTabara);
     long countByTabaraId(Long tabaraId);
-
+   //metoda care filtreaza inscrierile dupa status si status plata
+   List<Inscriere> findByTabaraIdAndStatutAndStatusPlata(Long idTabara, String statut, String statusPlata);
 
 
    }

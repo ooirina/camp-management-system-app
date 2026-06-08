@@ -28,7 +28,7 @@ public class CheckInOutController {
 
     @GetMapping("/participanti/tabara/{idTabara}")
     public List<Inscriere> getParticipantiTabara(@PathVariable Long idTabara) {
-        return inscriereRepository.findByTabaraId(idTabara);
+        return inscriereRepository.findByTabaraIdAndStatutAndStatusPlata(idTabara, "CONFIRMAT", "PLATIT");
     }
 
       //Check in

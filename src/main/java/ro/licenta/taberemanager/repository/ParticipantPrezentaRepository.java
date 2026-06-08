@@ -22,6 +22,8 @@ public interface ParticipantPrezentaRepository extends  JpaRepository<Participan
             "JOIN i.tabara t " +
             "CROSS JOIN Activitate a " +
             "LEFT JOIN ParticipantPrezenta pp ON pp.inscriere.id = i.id AND pp.activitate.id = a.id " +
-            "WHERE t.id = :idTabara AND a.id = :idActivitate")
+            "WHERE t.id = :idTabara AND a.id = :idActivitate AND i.statut = 'CONFIRMAT' AND i.statusPlata = 'PLATIT'")
     List<PrezentaDTO> getListaPrezentaActivitate(@Param("idTabara") Long idTabara, @Param("idActivitate") Long idActivitate);
+
+
 }

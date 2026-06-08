@@ -16,6 +16,8 @@ public class InscriereDetaliiDTO {
     private LocalDate dataInscriere;
     private BigDecimal suma;
     private String statusPlata;
+    private String numeParticipant;
+    private String prenumeParticipant;
 
 
 }

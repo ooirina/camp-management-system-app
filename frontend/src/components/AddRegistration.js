@@ -17,6 +17,8 @@ const [membriiFamilie, setMembriiFamilie] = useState([]);
 
 //datele pt Participant+ datele pentru Inscriere
 const [formData, setFormData]=useState({
+
+    idParticipant: null,
     numeParticipant:'',
     prenumeParticipant:'',
     dataNasterii:'',
@@ -113,6 +115,7 @@ const handleSelectareMembru = (e) => {
       // Dacă selectează "Altcineva (Nou)", golim formularul ca să îl scrie manual
       setFormData(prev => ({
         ...prev,
+        idParticipant: null,
         numeParticipant: '',
         prenumeParticipant: '',
         dataNasterii: '',
@@ -131,6 +134,7 @@ const handleSelectareMembru = (e) => {
 
         setFormData(prev => ({
           ...prev,
+          idParticipant: copilAles.id,
           numeParticipant: copilAles.nume || '',
           prenumeParticipant: copilAles.prenume || '',
           dataNasterii: dataFormatata,

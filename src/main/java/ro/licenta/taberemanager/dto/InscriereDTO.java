@@ -7,6 +7,7 @@ import java.time.LocalDate;
 @Data
 public class InscriereDTO {
     // Date Participant
+    private Long idParticipant; // Poate fi null dacă omul scrie datele manual
     private String numeParticipant;
     private String prenumeParticipant;
     private LocalDate dataNasterii;
