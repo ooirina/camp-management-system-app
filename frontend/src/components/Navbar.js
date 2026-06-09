@@ -64,11 +64,12 @@ const handleLogout=()=>{
                     <li><Link className="dropdown-item" to="/admin/adauga-traseu">Adaugă Traseu</Link></li>
                 </ul>
             </li>
-            <li className="nav-item">
-              <Link className="nav-link text-danger fw-bold" to="/panou-medical">
-                Panou Medical
-              </Link>
-            </li>
+
+             <li className="nav-item">
+               <Link className="nav-link fw-bold" to="/broadcast">
+                 Comunicare
+               </Link>
+             </li>
 
             <li className="nav-item">
                     <Link className="nav-link" to="/register">Înregistrare</Link>

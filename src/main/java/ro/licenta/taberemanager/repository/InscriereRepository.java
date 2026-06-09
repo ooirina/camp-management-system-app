@@ -23,5 +23,10 @@ public interface InscriereRepository extends JpaRepository<Inscriere,Long> {
    //metoda care filtreaza inscrierile dupa status si status plata
    List<Inscriere> findByTabaraIdAndStatutAndStatusPlata(Long idTabara, String statut, String statusPlata);
 
+    @Query(value = "SELECT DISTINCT u.email FROM inscriere i " +
+            "JOIN utilizator u ON i.id_user = u.id " +
+            "WHERE i.id_tabara = :idTabara AND i.status_plata = 'PLATIT'",
+            nativeQuery = true)
+    List<String> findConfirmedParentsEmails(@Param("idTabara") Long idTabara);
 
    }

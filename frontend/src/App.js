@@ -27,6 +27,7 @@ import AddTrailForm from './components/AddTrailForm';
 import AdminDashboard from './components/AdminDashboard';
 import PanouMedical from './components/PanouMedical';
 import ComparePage from './components/ComparePage';
+import BroadcastPage from './components/BroadcastPage';
 import 'leaflet/dist/leaflet.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -95,6 +96,7 @@ function App() {
            <Route path="/admin/dashboard" element={<AdminDashboard/>} />
            <Route path="/panou-medical" element={<PanouMedical />} />
           <Route path="/comparare" element={<ComparePage />} />
+          <Route path="/broadcast" element={<BroadcastPage />} />
         </Routes>
       </div>
     </Router>
