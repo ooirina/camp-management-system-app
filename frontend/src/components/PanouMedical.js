@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import axios from 'axios';
 
 function PanouMedical(){
@@ -11,6 +12,9 @@ function PanouMedical(){
 
    //luare id-ul cooordonatorului din memorie(sayu unde s-a salvat la login)
    const idCoordonator =localStorage.getItem('userId');
+
+   //pentru centralizaere bucatarie preparate speciale
+   const [raport, setRaport] = useState(null);
 
    // 1. Aducem lista de tabere pentru dropdown
      useEffect(() => {
@@ -48,6 +52,34 @@ function PanouMedical(){
     }
   }, [idCoordonator, filtruTabara]);
 
+
+//generare logica raport bucatarie
+  const  generateKitchenReport =async()=>{
+       if(filtruTabara ===' TOATE')
+       {
+           toast.warn("Te rugăm să selectezi o tabără specifică pentru a genera raportul!", {
+                           position: "top-right",
+                           autoClose: 3000,
+                           hideProgressBar: false,
+                           closeOnClick: true,
+                           pauseOnHover: true,
+                           draggable: true
+                       });
+                       return;
+       }
+      try {
+         const response= await axios.get(`http://localhost:8080/participanti/raport-bucatarie/${filtruTabara}`);
+         setRaport(response.data);
+
+         toast.success("Raportul logistic a fost generat cu succes!");
+      }catch (error){
+        console.error("Eroare la generare raport:", error);
+        toast.error("Eroare la generarea raportului. Încearcă din nou.");
+
+      }
+  };
+
+
   if (!loading && !idCoordonator) {
         return <div className="text-center mt-5 text-danger fw-bold">Eroare: Nu s-a putut identifica ID-ul coordonatorului (userId lipsește din sesiune).</div>;
     }
@@ -73,10 +105,40 @@ return (
           </select>
         </div>
 
-        <button className="btn btn-danger shadow-sm fw-bold" onClick={() => window.print()}>
-          🖨️ Printează Lista A4
-        </button>
+        {/* Butoanele de acțiune */}
+            <div className="d-flex gap-2">
+                {/* Butonul nou pentru raport */}
+                <button className="btn btn-warning shadow-sm fw-bold" onClick={generateKitchenReport}>
+                    📋 Raport Bucătărie
+                </button>
+                <button className="btn btn-danger shadow-sm fw-bold" onClick={() => window.print()}>
+                    🖨️ Printează Lista A4
+                </button>
+            </div>
       </div>
+
+      {/* Secțiunea de Raport Logistic Optimizată */}
+      {raport && (
+          <div className="card shadow mb-4 border-primary d-print-none">
+              <div className="card-header bg-primary text-white fw-bold">📋 Sumar Logistică Bucătărie</div>
+              <div className="card-body">
+                  <div className="row text-center">
+                      <div className="col-md-12 mb-3">
+                          <h4 className="text-primary">Total porții necesare: <strong>{raport["Total Porții"]}</strong></h4>
+                      </div>
+                      {Object.entries(raport)
+                          .filter(([key]) => key !== "Total Porții") // Excludem totalul din lista de meniu
+                          .map(([alergie, numar]) => (
+                              <div key={alergie} className="col-md-4">
+                                  <div className="alert alert-warning">
+                                      <strong>{numar}x</strong> Meniu: Fara <strong>{alergie}</strong>
+                                  </div>
+                              </div>
+                          ))}
+                  </div>
+              </div>
+          </div>
+      )}
 
       <div className="card shadow-lg border-danger border-top border-4">
         <div className="card-header bg-white p-4 d-flex justify-content-between align-items-center">

@@ -10,6 +10,9 @@ import ro.licenta.taberemanager.repository.ParticipantRepository;
 import ro.licenta.taberemanager.service.ParticipantService;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/participanti")
@@ -27,6 +30,37 @@ public class ParticipantController {
     public List<Participant> showParticipants(){
        return repository.findAll();
     }
+
+    //panoul medical pentru coordonator general toate taberele lui
+    @GetMapping("/medical/{idCoordonator}")
+    @ResponseBody
+    public List<Participant> getPanouMedical(@PathVariable Long idCoordonator){
+        return repository.findParticipantiMedicalByCoordonator(idCoordonator);
+    }
+
+    //panou medical pentru coordonator pt o anumita tabara
+    @GetMapping("/medical/{idCoordonator}/tabara/{idTabara}")
+    @ResponseBody
+    public List<Participant> getPanouMedicalFiltrat(@PathVariable Long idCoordonator, @PathVariable Long idTabara){
+        return repository.findParticipantiMedicalByCoordonatorAndTabara(idCoordonator, idTabara);
+    }
+
+    //metoda care face agregare(o grupare si numarare)
+    @GetMapping("/raport-bucatarie/{idTabara}")
+    public Map<String, Long> getRaportBucatarie(@PathVariable Long idTabara){
+        List<Participant> participanti =repository.findByTabaraIdReadyForKitchen(idTabara);
+        //se aduna numarul total
+        long total =participanti.size();
+
+        //agregam alergiile(grupare dupa detalii_medicale
+        Map<String, Long> raport= participanti.stream()
+                .filter(p->p.getAlergii()!=null && !p.getAlergii().equalsIgnoreCase("Fără"))
+                .collect(Collectors.groupingBy(Participant::getAlergii, Collectors.counting()));
+        raport.put("Total Porții", total);
+        return raport;
+    }
+
+
 
     //Cautare participant dupa id
     @GetMapping("/{id}")
@@ -49,19 +83,6 @@ public class ParticipantController {
         return service.salveazaParticipant(participant);
     }
 
-    //panoul medical pentru coordonator general toate taberele lui
-    @GetMapping("/medical/{idCoordonator}")
-    @ResponseBody
-    public List<Participant> getPanouMedical(@PathVariable Long idCoordonator){
-        return repository.findParticipantiMedicalByCoordonator(idCoordonator);
-    }
-
-    //panou medical pentru coordonator pt o anumita tabara
-    @GetMapping("/medical/{idCoordonator}/tabara/{idTabara}")
-    @ResponseBody
-    public List<Participant> getPanouMedicalFiltrat(@PathVariable Long idCoordonator, @PathVariable Long idTabara){
-        return repository.findParticipantiMedicalByCoordonatorAndTabara(idCoordonator, idTabara);
-    }
 
        //Aducere lista de membrii ai familiei( copii) pentru un anumit user(parinte)
     @GetMapping("/familie/{idUser}")
