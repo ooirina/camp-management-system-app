@@ -89,7 +89,33 @@ public class InscriereController {
         repository.deleteById(id);
     }
 
+    //confimare manuala a înscrierii de către coordonator
+    @PutMapping("/confirma/{id}")
+    public Inscriere confirmaInscriere(@PathVariable Long id) {
+        return repository.findById(id)
+                .map(inscriere -> {
+                   //nu se cofiram daca nu e platita
+                    if ("NEPLATIT".equals(inscriere.getStatusPlata())) {
+                        throw new RuntimeException("Eroare: Nu poți confirma o înscriere neplătită!");
+                    }
 
+                    inscriere.setStatut("CONFIRMAT");
+
+                    return repository.save(inscriere);
+                })
+                .orElseThrow(() -> new RuntimeException("Înscrierea cu ID-ul " + id + " nu a fost găsită"));
+    }
+
+     //respingere inscriere daca un coordonator a gasit probleme la o inscriere
+    @PutMapping("/respinge/{id}")
+    public Inscriere respingeInscriere(@PathVariable Long id) {
+        return repository.findById(id)
+                .map(inscriere -> {
+                    inscriere.setStatut("ANULAT");
+                    return repository.save(inscriere);
+                })
+                .orElseThrow(() -> new RuntimeException("Înscriere negăsită"));
+    }
    //actualizare inscriere
     @PutMapping("/actualizare/{id}")
     public Inscriere updateRegistration(@PathVariable Long id, @Valid @RequestBody Inscriere updatedRegistration){
