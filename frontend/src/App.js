@@ -9,7 +9,7 @@ import ActivityList from './components/ActivityList';
 import UserList from './components/UserList';
 import Navbar from './components/Navbar';
 import RegistrationList from './components/RegistrationList';
-import AddRegistration from './components/AddRegistration';
+import AddRegistrationForm from './components/AddRegistrationForm';
 import ParticipantList from './components/ParticipantList';
 import LoginPage from './components/auth/LoginPage';
 import Dashboard from './components/Dashboard';
@@ -29,6 +29,11 @@ import PanouMedical from './components/PanouMedical';
 import ComparePage from './components/ComparePage';
 import BroadcastPage from './components/BroadcastPage';
 import InternalAnnouncementsPage from './components/InternalAnnouncementsPage';
+import Checkout from './components/stripe/Checkout';
+import SuccessPayment from './components/stripe/SuccessPayment';
+import CancelPayment from './components/stripe/CancelPayment';
+import RegistrationDetails from './components/RegistrationDetails';
+
 import 'leaflet/dist/leaflet.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -88,11 +93,11 @@ function App() {
           <Route path="/activitati" element={<ActivityList />} />
            <Route path="/utilizatori" element={<UserList />} />
            <Route path="/inscrieri" element={<RegistrationList />} />
-           <Route path="/inscrieri/nou" element={<AddRegistration />} />
+           <Route path="/inscrieri/nou" element={<AddRegistrationForm />} />
            <Route path="/participanti"element={<ParticipantList />} />
            <Route path="/register" element={<RegisterPage />} />
            <Route path="/camp-details/:id" element={<CampDetails />}/>
-           <Route path="/add-registration" element={<AddRegistration />}/>
+           <Route path="/add-registration" element={<AddRegistrationForm />}/>
            <Route path="/prezenta" element={<AttendancePage/>}/>
            <Route path="/cazare" element={<AccommodationPage />} />
            <Route path="/check-in-out" element={<CheckInOutPage />} />
@@ -104,6 +109,11 @@ function App() {
           <Route path="/comparare" element={<ComparePage />} />
           <Route path="/broadcast" element={<BroadcastPage />} />
           <Route path="/avizier-staff" element={<InternalAnnouncementsPage />} />
+          <Route path="/checkout/:id" element={<Checkout />} />
+          <Route path="/success-plata" element={<SuccessPayment />} />
+          <Route path="/cancel-plata" element={<CancelPayment />} />
+          <Route path="/admin/inscrieri/:id" element={<RegistrationDetails />} />
+
         </Routes>
       </div>
     </Router>

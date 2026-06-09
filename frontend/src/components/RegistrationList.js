@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { RegistrationService } from '../services/api';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 
 const RegistrationList = () => {
     const [registrations, setRegistrations] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     //filtrare
     const [filtre, setFiltre] = useState({ tabara: 'TOATE', status: 'TOATE', plata: 'TOATE' });
@@ -27,9 +29,17 @@ const RegistrationList = () => {
 
     const handleConfirm = async (idInscriere) => {
         try {
-            await axios.put(`http://localhost:8080/inscrieri/confirma/${idInscriere}`);
+
+            //se extrage tokenul
+            const token = localStorage.getItem('token');
+            await axios.put(`http://localhost:8080/inscrieri/confirma/${idInscriere}`,{},{
+                   headers: { Authorization: `Bearer ${token}` }
+            });
             toast.success("Înscrierea a fost confirmată cu succes!");
-            // Aici apelezi din nou funcția de fetch pentru a reîmprospăta tabelul
+
+            // Actualizăm tabelul instant
+              const response = await RegistrationService.getAll();
+               setRegistrations(response.data);
         } catch (error) {
             toast.error("Eroare la confirmare!");
         }
@@ -41,10 +51,14 @@ const RegistrationList = () => {
 
             if (confirmare) {
                 try {
-                    await axios.put(`http://localhost:8080/inscrieri/respinge/${idInscriere}`);
+                    const token = localStorage.getItem('token');
+                    await axios.put(`http://localhost:8080/inscrieri/respinge/${idInscriere}`,{}, {
+                          headers: { Authorization: `Bearer ${token}` }
+
+                    });
                     toast.error("Înscrierea a fost respinsă.");
 
-                    // Refresh automat la listă după respingere
+                    // Refresh automat la listă după respingere/actualzare
                     const response = await RegistrationService.getAll();
                     setRegistrations(response.data);
 
@@ -57,17 +71,24 @@ const RegistrationList = () => {
 
     if (loading) return <div className="text-center mt-5">Se încarcă lista de înscrieri...</div>;
 
+//a extrage o listă fără duplicate (pentru dropdown-ul)
+     const tabereUnice = [...new Set(registrations.map(r => r.tabara?.nume).filter(Boolean))];
+
     return (
         <div className="container mt-4">
             <h2 className="mb-4">📋 Management Înscrieri</h2>
 
             {/*Bara de filtrare*/}
-            <div className="row mb-3">
-                <div className="col-md-3">
-                    <select className="form-select" onChange={(e) => setFiltre({...filtre, tabara: e.target.value})}>
-                        <option value="TOATE">Toate Taberele</option>
-                    </select>
-                </div>
+        <div className="row mb-3">
+            <div className="col-md-3">
+                   <select className="form-select" onChange={(e) => setFiltre({...filtre, tabara: e.target.value})}>
+                         <option value="TOATE">Toate Taberele</option>
+                              {tabereUnice.map(nume => (
+                                   <option key={nume} value={nume}>{nume}</option>
+                                 ))}
+                      </select>
+                 </div>
+
                 <div className="col-md-3">
                     <select className="form-select" onChange={(e) => setFiltre({...filtre, status: e.target.value})}>
                         <option value="TOATE">Toate Statusurile</option>
@@ -122,7 +143,12 @@ const RegistrationList = () => {
                               </td>
                               <td>{reg.statut}</td>
                               <td>
-                                  <button className="btn btn-sm btn-info text-white me-1">🔍</button>
+                                 <button
+                                     className="btn btn-sm btn-info text-white me-1"
+                                     onClick={() => navigate(`/admin/inscrieri/${reg.id}`)}
+                                 >
+                                     🔍 Detalii
+                                 </button>
 
                                   {/* Buton Confirmare */}
                                   {isPending && isPlatit && (

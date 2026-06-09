@@ -312,29 +312,54 @@ const handleStergereMembru = async(idMembru, prenumeMembru)=>{
                             </span>
                           </td>
 
-                          <td className="d-flex gap-2">
-                                <button className="btn btn-sm btn-outline-primary fw-bold" onClick={() => handleDownloadFactura(ins.id)}>
-                                   📄 Factură
-                                </button>
-                                <button className="btn btn-sm btn-dark fw-bold text-white" onClick={() => setQrOpen(ins.id)}>
-                                   Ecuson QR
-                                </button>
-                                <button className="btn btn-sm btn-outline-danger fw-bold" onClick={() => handleStergere(ins.id)}>
-                                   ❌ Anulează
-                                </button>
-                              </td>
-                              {/* Buton ascuns pentru fisier, activat de label-ul de mai jos */}
-                                  <input
-                                     type="file"
-                                     id={`upload-${ins.id}`}
-                                     style={{ display: 'none' }}
-                                     onChange={(e) => handleFileUpload(e, ins.id)}
-                                     accept=".pdf,.jpg,.png"
-                                  />
-                                  <label htmlFor={`upload-${ins.id}`} className="btn btn-sm btn-outline-success fw-bold mb-0">
-                                     ⚕️ Încarcă Fişă
-                                  </label>
-                        </tr>
+{/* ZONA DE ACȚIUNI DINAMICE */}
+                        <td className="d-flex gap-2 flex-wrap">
+
+                          {/* Dacă este NEPLĂTIT, se afiseaza butonul de Plată și de Anulare */}
+                          {ins.statusPlata === 'NEPLATIT' ? (
+                            <>
+                              <button
+                                className="btn btn-sm btn-success fw-bold shadow-sm"
+                                onClick={() => navigate(`/checkout/${ins.id}`)}
+                              >
+                                💳 Plătește Acum
+                              </button>
+
+                            </>
+                          ) : (
+                            /* Dacă este PLĂTIT, îi da acces la Factură și Ecuson QR */
+                            <>
+                              <button className="btn btn-sm btn-outline-primary fw-bold" onClick={() => handleDownloadFactura(ins.id)}>
+                                📄 Factură
+                              </button>
+                              <button className="btn btn-sm btn-dark fw-bold text-white" onClick={() => setQrOpen(ins.id)}>
+                                Ecuson QR
+                              </button>
+                            </>
+                          )}
+
+                          {/* Butoanele care sunt mereu vizibile: Anulare și Încărcare Fișă */}
+                           <button className="btn btn-sm btn-outline-danger fw-bold" onClick={() => handleStergere(ins.id)}>
+                                ❌ Anulează
+                           </button>
+
+                          {/* Butonul de Încărcare Fișă Medicală rămâne vizibil indiferent de status */}
+                          <div className="d-inline-block">
+                            <input
+                              type="file"
+                              id={`upload-${ins.id}`}
+                              style={{ display: 'none' }}
+                              onChange={(e) => handleFileUpload(e, ins.id)}
+                              accept=".pdf,.jpg,.png"
+                            />
+                            <label htmlFor={`upload-${ins.id}`} className="btn btn-sm btn-outline-success fw-bold mb-0">
+                              ⚕️ Încarcă Fişă
+                            </label>
+                          </div>
+
+                        </td>
+                      </tr>
+
                       ))
                     ) : (
                       <tr>

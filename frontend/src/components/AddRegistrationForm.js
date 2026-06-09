@@ -46,13 +46,16 @@ e.preventDefault();
 try{
     const token=localStorage.getItem('token');
     ///trimitere catre metoda "dubla" din java controller
-    await axios.post('http://localhost:8080/inscrieri/save-completa',formData,{
+   const response = await axios.post('http://localhost:8080/inscrieri/save-completa',formData,{
          headers:{ Authorization:`Bearer ${token}`}
 
 
     });
-    alert('Înscrierea și Participantul au fost salvați cu succes!');
-    navigate('/user-profile');
+  //extrage ID-ul inscrierii abia create din raspunsul de la Java
+    const inscriereNouaId = response.data.id;
+
+    alert('Înscrierea și Participantul au fost salvați cu succes! Te redirecționăm către suma de plată...');
+    navigate(`/checkout/${inscriereNouaId}`);
 
 } catch(err){
 console.error(err);
