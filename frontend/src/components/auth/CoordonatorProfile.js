@@ -171,6 +171,16 @@ const CoordinatorProfile = () => {
                       </div>
                   </div>
 
+                  {/* BUTON CATRE AVIZIER (Apare doar dacă a selectat o tabără) */}
+                  {tabaraActivaId && (
+                      <div className="text-center mt-3">
+                          <Link to="/avizier-staff" className="btn btn-outline-success fw-bold shadow-sm">
+                              <i className="bi bi-clipboard-data me-2"></i>
+                              Deschide Avizierul Echipei
+                          </Link>
+                      </div>
+                  )}
+
                   {/*ZONA DE WAITLIST (Apare doar daca sunt cereri in asteptare) */}
                   {!loading && waitlist.length > 0 && (
                       <div className="card shadow-sm border-warning mb-5">

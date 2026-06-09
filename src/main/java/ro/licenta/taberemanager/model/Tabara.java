@@ -55,6 +55,9 @@ public class Tabara {
     private BigDecimal latitudine;
     private BigDecimal longitudine;
 
+    @Column(name = "id_coordonator_principal")
+    private Long idCoordonatorPrincipal;
+
     @ManyToMany
     @JoinTable(
             name="tabara_categorie",

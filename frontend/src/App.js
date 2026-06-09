@@ -28,14 +28,17 @@ import AdminDashboard from './components/AdminDashboard';
 import PanouMedical from './components/PanouMedical';
 import ComparePage from './components/ComparePage';
 import BroadcastPage from './components/BroadcastPage';
+import InternalAnnouncementsPage from './components/InternalAnnouncementsPage';
 import 'leaflet/dist/leaflet.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 
 ///in caz ca tokenul expira
+//se seteaza un "ascultator" pe toate raspunsurile care vin de la backend
 axios.interceptors.response.use(
   (response) => {
+  //daca totul e ok(ex status 200), se lasa raspunsul sa treaca
     return response;
   },
   (error) => {
@@ -43,12 +46,15 @@ axios.interceptors.response.use(
       if (localStorage.getItem('userEmail') || localStorage.getItem('token')) {
         alert(" Sesiunea a expirat din motive de securitate. Te rugăm să te conectezi din nou!");
         localStorage.clear();
+        //mutare user pe pagina de login
         window.location.href = '/login';
       }
     }
+    //returneaza eroare mai departe ca sa o vada si restul aplicatiei daca e nevoie
     return Promise.reject(error);
   }
 );
+
 
 function App() {
   // OBSERVAȚIE: Am șters useEffect și axios de aici!
@@ -97,6 +103,7 @@ function App() {
            <Route path="/panou-medical" element={<PanouMedical />} />
           <Route path="/comparare" element={<ComparePage />} />
           <Route path="/broadcast" element={<BroadcastPage />} />
+          <Route path="/avizier-staff" element={<InternalAnnouncementsPage />} />
         </Routes>
       </div>
     </Router>

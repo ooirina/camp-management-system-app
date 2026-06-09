@@ -14,6 +14,8 @@ import ro.licenta.taberemanager.model.User;
 import ro.licenta.taberemanager.repository.UserRepository;
 import ro.licenta.taberemanager.security.JwtAuthenticationFilter;
 import ro.licenta.taberemanager.security.JwtService;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -43,11 +45,17 @@ public class SecurityConfig {
               //  .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/autentificare/**","/login/**","/oauth2/**","/tabere/**","/activitati/**","/utilizatori/**","/inscrieri/**","/prezenta/**", "/cazare/**", "/flux/**","/map/**","/trasee/**","/categorii/**", "/participanti/**").permitAll()
+                        .requestMatchers("/autentificare/**","/login/**","/oauth2/**","/tabere/**","/activitati/**","/utilizatori/**","/inscrieri/**","/prezenta/**", "/cazare/**", "/flux/**","/map/**","/trasee/**","/categorii/**", "/participanti/**", "/anunturi-interne/**").permitAll()
                         .anyRequest().authenticated() // PERMITEM TOT (provizoriu, pentru licență)
 
 
                 )
+
+                //opreste redirectionarea catre google daca calea e secretea
+                .exceptionHandling(customizer -> customizer
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                )
+
                 .oauth2Login(oauth2->oauth2
                         .successHandler((request, response, authentication)->{
                             ///extragere obiect Oauth2USer care contine toate datele de la google
