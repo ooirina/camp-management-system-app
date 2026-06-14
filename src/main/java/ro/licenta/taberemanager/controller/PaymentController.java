@@ -3,13 +3,20 @@ package ro.licenta.taberemanager.controller;
 import com.stripe.Stripe;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.*;
 import ro.licenta.taberemanager.model.Inscriere;
+import ro.licenta.taberemanager.model.User;
 import ro.licenta.taberemanager.repository.InscriereRepository;
 
 import jakarta.annotation.PostConstruct;
+import ro.licenta.taberemanager.repository.UserRepository;
+import ro.licenta.taberemanager.service.EmailService;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,7 +25,15 @@ import java.util.Map;
 @RequestMapping("/plati")
 public class PaymentController {
 
-    private final InscriereRepository inscriereRepository;
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private InscriereRepository inscriereRepository;
+
+    @Autowired
+    private UserRepository userRepository;//pentru a gasi emailul
+
 
     //Spring boot injecteaza cheia secreta din application.properties
     @Value("${stripe.api.key}")
@@ -92,9 +107,25 @@ public class PaymentController {
             inscriere.setStatusPlata("PLATIT");
             inscriereRepository.save(inscriere);
 
+            //trimitere emial de confirmare
+
+            //  Găsești plătitorul
+            User platitor = userRepository.findById(inscriere.getIdPlatitor())
+                    .orElseThrow(() -> new RuntimeException("Plătitorul nu a fost găsit"));
+
+            // Se trimite emailul folosind serviciul
+            String subiect = "Confirmare plată tabără - CampManager";
+            String mesaj = "Bună ziua,\n\nPlata pentru înscrierea copilului " +
+                    inscriere.getParticipant().getPrenume() +
+                    " a fost procesată cu succes. Vă mulțumim!";
+
+            emailService.sendSimpleEmail(platitor.getEmail(), subiect, mesaj);
+
             return ResponseEntity.ok("Statusul plății a fost actualizat cu succes!");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Eroare: " + e.getMessage());
         }
     }
+
+
 }

@@ -10,6 +10,8 @@ import org.springframework.ui.Model;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/utilizatori")
@@ -32,6 +34,16 @@ public class UserController {
     return repository.findAll();
     }
     */
+
+    @GetMapping("/coordonatori/lista")
+    public List<User> getTotiCoordonatorii() {
+
+        return repository.findAll().stream()
+                .filter(u -> u.getIdRol() != null && u.getIdRol().equals(2L))
+                .collect(Collectors.toList());
+    }
+
+
 //Se cauta un anumit utilizator dupa id
     @GetMapping("/{id}")
     public User getUserById(@PathVariable Long id){

@@ -10,6 +10,7 @@ const token = localStorage.getItem('token');
 const navigate =useNavigate();
 const userEmail=localStorage.getItem('userEmail');
 const userRole=localStorage.getItem('userRole');
+ const estePrincipal= localStorage.getItem('esteCoordonatorPrincipal') === 'true';
 
 const location = useLocation();//sa stie navbar unde se afla utiloizatorul pt a reciti memoria localStorage sa verifice daca sunt mesaje noi
 
@@ -17,13 +18,14 @@ const location = useLocation();//sa stie navbar unde se afla utiloizatorul pt a 
     const [hasNewAnnouncements, setHasNewAnnouncements] = useState(false);
     const activeCampId = localStorage.getItem('tabaraActivaId');
 
+// ruta catre profil in functie de rol
 let caleCatreProfil='/user-profile';
 if(userRole ==='2')
 caleCatreProfil='/coordonator-profile';
 if(userRole ==='1')
 caleCatreProfil='/admin-profile';
 
-
+//verificare mesasje noi
 useEffect(()=>{
    //daca nu este intr-o tabara (prezenta/selectata intr-o tabara din profil coordonator), nu se cauta mesaje
     if(!activeCampId)
@@ -63,7 +65,6 @@ useEffect(()=>{
                    checkUnreadMessages();
         }, 10000); // 10000 milisecunde = 10 secunde
 
-    // Se curata cronometrul dacă componenta dispare (Good Practice in React)
       return () => clearInterval(intervalId);
 
 }, [activeCampId, location.pathname]);// se ruleaza cand se incarca Navbar-ul sau se schimba tabara
@@ -74,125 +75,216 @@ const handleLogout=()=>{
   navigate('login');
   window.location.reload();
 };
+
+// helpers vizibiliate
+ const esteAdmin = userRole === '1';
+ const esteCoordinator = userRole === '2';
+ const esteUser = userRole === '5';
+
+
+ /// Poate accesa funcții de management (cazare, înscrieri, rapoarte)
+  const areAccesManagement = esteAdmin || (esteCoordinator && estePrincipal);
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
-      <div className="container">
-        <Link className="navbar-brand fw-bold" to="/">🏕️ CampManager</Link>
+       <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
+                   <div className="container">
+                       <Link className="navbar-brand fw-bold" to="/">🏕️ CampCore</Link>
 
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span className="navbar-toggler-icon"></span>
-        </button>
+                       <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                           <span className="navbar-toggler-icon"></span>
+                       </button>
 
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto">
-            <li className="nav-item">
-              <Link className="nav-link" to="/tabere">Tabere</Link>
-            </li>
-            <li className="nav-item">
-                <Link className="nav-link" to="/harta">
-                    <i className="bi bi-map-fill me-1"></i> Hartă Tabere
-                </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/activitati">Activități</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/participanti">Participanți</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/cazare">🏠 Management Cazare</Link>
-              </li>
-            <li className="nav-item">
-               <Link className="nav-link" to="/prezenta">Prezenta</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/inscrieri">Înscrieri</Link>
-            </li>
-            <li className="nav-item dropdown">
-                <a className="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
-                    ⚙️ Admin
-                </a>
-                <ul className="dropdown-menu">
-                    <li><Link className="dropdown-item" to="/admin/adauga-tabara">Adaugă Tabără</Link></li>
-                    <li><Link className="dropdown-item" to="/admin/adauga-traseu">Adaugă Traseu</Link></li>
-                </ul>
-            </li>
+                       <div className="collapse navbar-collapse" id="navbarNav">
+                           {/* Tot meniul este aliniat la DREAPTA folosind ms-auto */}
+                           <ul className="navbar-nav ms-auto align-items-center">
 
-             <li className="nav-item">
-               <Link className="nav-link fw-bold" to="/broadcast">
-                 Comunicare
-               </Link>
-             </li>
+                               {/* DASHBOARD */}
+                               {token && (
+                                     <li className="nav-item">
+                                         <Link className="nav-link" to="/dashboard">Dashboard</Link>
+                                    </li>
+                                        )}
 
-            <li className="nav-item">
-                    <Link className="nav-link" to="/register">Înregistrare</Link>
-                </li>
 
-           <li className="nav-item ms-3">
-               <Link to="/avizier-staff" className="nav-link position-relative text-warning" title="Avizier Staff">
-                   {/* Iconița de clopoțel  */}
-                     🔔
+                               {/* Dropdown: TABERE */}
+                         <li className="nav-item dropdown">
+                                                    <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                                        Tabere
+                                                    </a>
+                                                    <ul className="dropdown-menu">
+                                                        <li><Link className="dropdown-item" to="/tabere">Listă Tabere</Link></li>
+                                                        <li><Link className="dropdown-item" to="/harta">🗺️ Hartă Tabere</Link></li>
+                                                        {/* Adaugă tabără — doar admin */}
+                                                        {esteAdmin && (
+                                                            <>
+                                                                <li><hr className="dropdown-divider" /></li>
+                                                                <li><Link className="dropdown-item" to="/admin/adauga-tabara">Adaugă Tabără</Link></li>
+                                                            </>
+                                                        )}
+                                                    </ul>
+                                                </li>
 
-                   {/* Bulina roșie - apare DOAR dacă hasNewAnnouncements este true */}
-                   {hasNewAnnouncements && (
-                       <span className="position-absolute top-25 start-75 translate-middle p-1 bg-danger border border-light rounded-circle" style={{ width: '10px', height: '10px' }}>
-                           <span className="visually-hidden">Anunțuri noi</span>
-                       </span>
-                   )}
-               </Link>
-           </li>
-           {/* <li className="nav-item ms-lg-3">
-              <Link className="btn btn-primary btn-sm mt-1" to="/inscrieri/nou">
-                ➕ Înscriere Nouă
-              </Link>
-            </li>*/}
+                               {/* Dropdown: PARTICIPANȚI & ÎNSCRIERI-doar admin și coordonatori */}
+                                {(esteAdmin || esteCoordinator) && (
+                                                           <li className="nav-item dropdown">
+                                                               <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                                                   Participanți
+                                                               </a>
+                                                               <ul className="dropdown-menu">
+                                                                   <li><Link className="dropdown-item" to="/participanti">Listă Participanți</Link></li>
+                                                                   {/* Management înscrieri — doar principal + admin */}
+                                                                   {areAccesManagement && (
+                                                                       <li><Link className="dropdown-item" to="/inscrieri">Management Înscrieri</Link></li>
+                                                                   )}
+                                                                   {esteAdmin && (
+                                                                       <>
+                                                                           <li><hr className="dropdown-divider" /></li>
+                                                                           <li><Link className="dropdown-item" to="/adauga-inscriere">Adaugă Înscriere</Link></li>
+                                                                           <li><Link className="dropdown-item" to="/register">Înregistrare Nouă</Link></li>
+                                                                       </>
+                                                                   )}
+                                                               </ul>
+                                                           </li>
+                                                       )}
 
-            {!token?(
-            <li className="nav-item dropdown ms-lg-3">
-              <button className="btn btn-primary btn-sm dropdown-toggle" type="button" onClick={() => setShowLoginMenu(!showLoginMenu)} aria-expanded={showLoginMenu}>
-                 Logare
-              </button>
 
-         {/*  meniu la login care coboara cu cele 2 optiuni */}
-               <ul className={`dropdown-menu dropdown-menu-end shadow ${showLoginMenu ? 'show' : ''}`}
-                                 style={{ position: 'absolute', right: 0 }}>
-                               <li>
-                                 <Link className="dropdown-item py-2" to="/login" onClick={() => setShowLoginMenu(false)}>
-                                   <strong>Logare in User Hub</strong><br/>
-                                   <small className="text-muted">Pentru participanți și părinți</small>
-                                 </Link>
-                               </li>
-                               <li><hr className="dropdown-divider" /></li>
-                               <li>
-                                 <Link className="dropdown-item py-2" to="/admin-login" onClick={() => setShowLoginMenu(false)}>
-                                   <span className="text-danger fw-bold">Logare in Admin Hub</span><br/>
-                                   <small className="text-muted">Pentru coordonatori si admin</small>
-                                 </Link>
-                               </li>
-                             </ul>
-                           </li>
+                               {/* Dropdown: ACTIVITĂȚI -admin si cooordonatori*/}
 
-                           ):(
-                           <>
-                                 <li className="nav-item ms-lg-4">
-                                     {/* {caleCatreProfil} în loc de "/profile" pentru a stii ce tip de profil sa afiseze */}
-                                     <Link className="nav-link active fw-bold text-info" to={caleCatreProfil}>
-                                         Profilul meu
-                                     </Link>
-                                 </li>
-                                 <li className="nav-item ms-lg-2">
-                                     <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
-                                         Logout
-                                     </button>
-                                 </li>
-                              </>
-                      )}
+                               {(esteAdmin || esteCoordinator) && (
+                                                           <li className="nav-item dropdown">
+                                                               <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                                                   Activități
+                                                               </a>
+                                                               <ul className="dropdown-menu">
+                                                                   <li><Link className="dropdown-item" to="/activitati">Listă Activități</Link></li>
+                                                                   {/* Adaugă activitate — doar principal + admin */}
+                                                                   {areAccesManagement && (
+                                                                       <>
+                                                                           <li><hr className="dropdown-divider" /></li>
+                                                                           <li><Link className="dropdown-item" to="/admin/adauga-activitate">Adaugă Activitate</Link></li>
+                                                                           <li><Link className="dropdown-item" to="/admin/adauga-traseu">Adaugă Traseu</Link></li>
+                                                                       </>
+                                                                   )}
+                                                               </ul>
+                                                           </li>
+                                                       )}
 
-          </ul>
-        </div>
-      </div>
-    </nav>
-  );
-};
 
-export default Navbar;
+                               {/* Dropdown: LOGISTICĂ-doar admin și coordonatori */}
+                              {(esteAdmin || esteCoordinator) && (
+                                                          <li className="nav-item dropdown">
+                                                              <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                                                  Logistică
+                                                              </a>
+                                                              <ul className="dropdown-menu">
+                                                                  {/* Prezență și check-in — orice coordonator */}
+                                                                  <li><Link className="dropdown-item" to="/prezenta">Prezență</Link></li>
+                                                                  <li><Link className="dropdown-item" to="/check-in-out">Check-In / Check-Out</Link></li>
+                                                                  <li><Link className="dropdown-item text-danger fw-bold" to="/panou-medical">🏥 Panou Medical</Link></li>
+                                                                  {/* Cazare — doar principal + admin */}
+                                                                  {areAccesManagement && (
+                                                                      <li><Link className="dropdown-item" to="/cazare">🏠 Management Cazare</Link></li>
+                                                                  )}
+                                                              </ul>
+                                                          </li>
+                                                      )}
+
+
+                             {/* RAPOARTE — doar principal + admin */}
+                                                     {areAccesManagement && (
+                                                         <li className="nav-item">
+                                                             <Link className="nav-link fw-bold" to="/raport-manager">Rapoarte</Link>
+                                                         </li>
+                                                     )}
+
+                               {/* SETĂRI ADMIN (Apare doar dacă rolul este de Admin - ex: '1') */}
+                               {esteAdmin && (
+                                                           <li className="nav-item dropdown">
+                                                               <a className="nav-link dropdown-toggle text-warning" href="#" role="button" data-bs-toggle="dropdown">
+                                                                   ⚙️ Admin
+                                                               </a>
+                                                               <ul className="dropdown-menu">
+                                                                   <li><Link className="dropdown-item" to="/utilizatori">Gestiune Utilizatori</Link></li>
+                                                                   <li><Link className="dropdown-item" to="/admin-dashboard">Admin Dashboard</Link></li>
+                                                               </ul>
+                                                           </li>
+                                                       )}
+
+                                 {/* COMUNICARE — doar admin și coordonatori */}
+                                                       {(esteAdmin || esteCoordinator) && (
+                                                           <li className="nav-item">
+                                                               <Link className="nav-link fw-bold" to="/broadcast">Comunicare</Link>
+                                                           </li>
+                                                       )}
+
+                              {/* RAPOARTE — doar principal + admin */}
+                                                      {areAccesManagement && (
+                                                          <li className="nav-item">
+                                                              <Link className="nav-link fw-bold" to="/raport-manager">Rapoarte</Link>
+                                                          </li>
+                                                      )}
+
+                               {/* AVIZIER — doar logați ca coordonator/admin cu tabără activă */}
+                                                       {(esteAdmin || esteCoordinator) && (
+                                                           <li className="nav-item ms-lg-3 me-2">
+                                                               <Link to="/avizier-staff" className="nav-link position-relative text-warning fs-5" title="Avizier Staff">
+                                                                   🔔
+                                                                   {hasNewAnnouncements && (
+                                                                       <span className="position-absolute top-25 start-75 translate-middle p-1 bg-danger border border-light rounded-circle"
+                                                                           style={{ width: '10px', height: '10px' }}>
+                                                                           <span className="visually-hidden">Anunțuri noi</span>
+                                                                       </span>
+                                                                   )}
+                                                               </Link>
+                                                           </li>
+                                                       )}
+
+                               {/* ZONA DE AUTENTIFICARE */}
+                                                    {!token ? (
+                                                        <li className="nav-item dropdown ms-lg-2">
+                                                            <button className="btn btn-primary btn-sm dropdown-toggle mt-1 mt-lg-0"
+                                                                onClick={() => setShowLoginMenu(!showLoginMenu)}>
+                                                                Logare
+                                                            </button>
+                                                            <ul className={`dropdown-menu dropdown-menu-end shadow ${showLoginMenu ? 'show' : ''}`}
+                                                                style={{ position: 'absolute', right: 0 }}>
+                                                                <li>
+                                                                    <Link className="dropdown-item py-2" to="/login"
+                                                                        onClick={() => setShowLoginMenu(false)}>
+                                                                        <strong>Logare in User Hub</strong><br />
+                                                                        <small className="text-muted">Pentru participanți și părinți</small>
+                                                                    </Link>
+                                                                </li>
+                                                                <li><hr className="dropdown-divider" /></li>
+                                                                <li>
+                                                                    <Link className="dropdown-item py-2" to="/admin-login"
+                                                                        onClick={() => setShowLoginMenu(false)}>
+                                                                        <span className="text-danger fw-bold">Logare in Admin Hub</span><br />
+                                                                        <small className="text-muted">Pentru coordonatori si admin</small>
+                                                                    </Link>
+                                                                </li>
+                                                            </ul>
+                                                        </li>
+                                                    ) : (
+                                                        <>
+                                                            <li className="nav-item ms-lg-3">
+                                                                <Link className="nav-link active fw-bold text-info" to={caleCatreProfil}>
+                                                                    Profilul meu
+                                                                </Link>
+                                                            </li>
+                                                            <li className="nav-item ms-lg-2">
+                                                                <button className="btn btn-outline-danger btn-sm mt-1 mt-lg-0"
+                                                                    onClick={handleLogout}>
+                                                                    Logout
+                                                                </button>
+                                                            </li>
+                                                        </>
+                                                    )}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </nav>
+                                );
+                            };
+
+                            export default Navbar;

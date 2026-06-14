@@ -32,9 +32,14 @@ function AdminLoginPage() {
         }
     };
 
+    // Funcția pentru logare Google
+        const handleGoogleLogin = () => {
+            window.location.href = "http://localhost:8080/oauth2/authorization/google";
+        };
+
    return (
            <div className="container d-flex justify-content-center align-items-center vh-100">
-               {/* Am schimbat culorile în roșu/danger ca să fie clar că e o zonă restricționată */}
+               {/*  culorile în roșu/danger ca să fie clar că e o zonă restricționată */}
                <div className="card p-4 shadow border-danger" style={{width: '400px', borderRadius: '15px' }}>
                    <h2 className="text-center mb-4 text-danger fw-bold">Panou Admin/Coordonator</h2>
 
@@ -52,7 +57,28 @@ function AdminLoginPage() {
                        <button type="submit" className="btn btn-danger w-100 mb-4 fw-bold">Acces Securizat</button>
 
                        <hr />
-
+                    {/* Buton Google */}
+                      <div className="text-center mb-3">
+                          <button
+                              type="button"
+                              onClick={handleGoogleLogin}
+                              className="btn btn-outline-dark w-100"
+                              style={{ borderRadius: '8px', fontWeight: '500' }}
+                          >
+                              <img
+                                  src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+                                  alt="Google"
+                                  style={{ width: '18px', marginRight: '10px' }}
+                              />
+                              Continuă cu Google
+                          </button>
+                      </div>
+                      {/* Buton Am uitat parola */}
+                      <div className="text-center mt-3">
+                          <a href="/forgot-password" className="btn btn-outline-secondary btn-sm px-4 rounded-pill">
+                              Am uitat parola
+                          </a>
+                      </div>
                        {/* Am modificat butonul de jos: Dacă s-a rătăcit aici, îl trimitem la logarea normală */}
                        <div className="text-center mt-3">
                            <p className="mb-0" style={{ fontSize: '0.85rem', color: '#666' }}>

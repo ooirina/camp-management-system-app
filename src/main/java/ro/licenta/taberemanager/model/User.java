@@ -26,6 +26,8 @@ public class User
     private String parola;
     @Column(name="id_rol")
     private BigDecimal idRol;
+    @Column(name="reset_token")
+    private  String resetToken;
    /* @ManyToOne
     private Set<Rol> roluri--nu stiu care e faza teebuie modificat nu am trecutw relatiile intre entitati*/
 

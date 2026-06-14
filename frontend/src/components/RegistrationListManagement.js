@@ -10,13 +10,24 @@ const RegistrationList = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
+const userId = localStorage.getItem('userId');
+    const userRole = localStorage.getItem('userRole');
+    const token = localStorage.getItem('token');
+    const config = { headers: { Authorization: `Bearer ${token}` } };
+
     //filtrare
     const [filtre, setFiltre] = useState({ tabara: 'TOATE', status: 'TOATE', plata: 'TOATE' });
 
-    useEffect(() => {
+// url in functie de URL: admin vede toate, coordonatorul vede doar ale lui
+     const getUrl = () => userRole === '1'
+          ? 'http://localhost:8080/inscrieri/toate'
+           : `http://localhost:8080/inscrieri/coordonator/${userId}`;
+
+
         const fetchRegistrations = async () => {
             try {
-                const response = await RegistrationService.getAll();
+
+               const response = await axios.get(getUrl(), config);
                 setRegistrations(response.data);
             } catch (err) {
                 console.error("Eroare la încărcare înscrieri:", err);
@@ -24,22 +35,16 @@ const RegistrationList = () => {
                 setLoading(false);
             }
         };
-        fetchRegistrations();
-    }, []);
+
+
+   useEffect(() => { fetchRegistrations(); }, []);
 
     const handleConfirm = async (idInscriere) => {
         try {
+          await axios.put(`http://localhost:8080/inscrieri/confirma/${idInscriere}`, {}, config);
+                toast.success("Înscrierea a fost confirmată cu succes!");
+                fetchRegistrations();
 
-            //se extrage tokenul
-            const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:8080/inscrieri/confirma/${idInscriere}`,{},{
-                   headers: { Authorization: `Bearer ${token}` }
-            });
-            toast.success("Înscrierea a fost confirmată cu succes!");
-
-            // Actualizăm tabelul instant
-              const response = await RegistrationService.getAll();
-               setRegistrations(response.data);
         } catch (error) {
             toast.error("Eroare la confirmare!");
         }
@@ -51,16 +56,9 @@ const RegistrationList = () => {
 
             if (confirmare) {
                 try {
-                    const token = localStorage.getItem('token');
-                    await axios.put(`http://localhost:8080/inscrieri/respinge/${idInscriere}`,{}, {
-                          headers: { Authorization: `Bearer ${token}` }
-
-                    });
-                    toast.error("Înscrierea a fost respinsă.");
-
-                    // Refresh automat la listă după respingere/actualzare
-                    const response = await RegistrationService.getAll();
-                    setRegistrations(response.data);
+                    await axios.put(`http://localhost:8080/inscrieri/respinge/${idInscriere}`, {}, config);
+                      toast.error("Înscrierea a fost respinsă.");
+                       fetchRegistrations();
 
                 } catch (error) {
                     console.error("Eroare la respingere:", error);

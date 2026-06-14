@@ -12,4 +12,6 @@ public interface TabaraRepository extends JpaRepository<Tabara,Long> {
     //taberele la care coordonatorul a fost asignat
     @Query("SELECT DISTINCT a.tabara FROM Activitate a WHERE a.coordonator.id = :idCoordonator")
     List<Tabara> findTabereByCoordonator(@Param("idCoordonator") Long idCoordonator);
+
+    List<Tabara> findByIdCoordonatorPrincipal(Long idCoordonatorPrincipal);
 }

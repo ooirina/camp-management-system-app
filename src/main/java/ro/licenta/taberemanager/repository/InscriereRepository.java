@@ -29,4 +29,8 @@ public interface InscriereRepository extends JpaRepository<Inscriere,Long> {
             nativeQuery = true)
     List<String> findConfirmedParentsEmails(@Param("idTabara") Long idTabara);
 
+    List<Inscriere> findByTabara_IdCoordonatorPrincipal(Long idCoordonator);
+
+    List<Inscriere> findByTabara_IdCoordonatorPrincipalAndTabara_Id(Long idCoordonator, Long idTabara);
+
    }

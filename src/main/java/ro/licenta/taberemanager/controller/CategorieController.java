@@ -19,4 +19,8 @@ public class CategorieController {
     public List<Categorie> getAllCategorii() {
         return categorieRepository.findAll();
     }
+///  trrebuoe pus  get/categorii/lista  (pt dropdown cand se adauga tabara)
+   /// post categorii /creare   (la admin)
+    /// delete categorii/stergere/{id}
+
 }

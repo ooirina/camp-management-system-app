@@ -11,6 +11,10 @@ const CheckInOutPage = () => {
     //deschide camera
     const [isScanning, setIsScanning] = useState(false);
 
+    //userId pentru a filtra taberele coordonatorului
+      const userId = localStorage.getItem('userId');
+      const userRole = localStorage.getItem('userRole');
+
     useEffect(()=>{
       let scanner =null;
       if(isScanning){
@@ -49,7 +53,11 @@ const CheckInOutPage = () => {
 
 
     useEffect(() => {
-        axios.get('http://localhost:8080/tabere/lista').then(res => setTabere(res.data));
+       const url = userRole === '1'
+                   ? 'http://localhost:8080/tabere/lista'
+                   : `http://localhost:8080/tabere/coordonator/${userId}`;
+
+      axios.get(url).then(res => setTabere(res.data));
 
      // Dacă avem o tabără activă salvată, aducem automat participanții pentru ea
              const tabaraSalvata = localStorage.getItem('tabaraActivaId');

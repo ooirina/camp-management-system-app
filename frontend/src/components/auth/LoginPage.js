@@ -65,6 +65,11 @@ function LoginPage() {
             </div>
 
            <div className="text-center mt-3">
+               <a href="/forgot-password" className="btn btn-outline-secondary btn-sm px-4 rounded-pill">
+                   Am uitat parola
+               </a>
+           </div>
+           <div className="text-center mt-3">
               <p className="mb-0" style={{ fontSize: '0.85rem', color: '#666' }}>
               Ești administrator?
                </p>

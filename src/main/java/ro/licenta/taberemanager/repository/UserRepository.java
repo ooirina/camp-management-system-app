@@ -9,4 +9,7 @@ import java.util.Optional;
 public interface UserRepository extends  JpaRepository<User, Long> {
 Optional<User> findByEmail(String email);
 
+//ca sa se poata cauta dupa acel toke temporar
+Optional<User> findByResetToken(String resetToken);
+
 }

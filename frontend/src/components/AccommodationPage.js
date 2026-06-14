@@ -11,6 +11,12 @@ const AccommodationPage = () => {
     const [isEditing, setIsEditing]= useState(false);
     const [editingCameraId, setEditingCameraId]= useState(null);
 
+
+
+//   doar taberele coordonatoeului/adminului
+  const userId   = localStorage.getItem('userId');
+  const userRole = localStorage.getItem('userRole');
+
     useEffect(() => {
         axios.get('http://localhost:8080/tabere/lista')
              .then(res => setTabere(res.data));

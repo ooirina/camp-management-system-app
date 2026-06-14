@@ -8,11 +8,14 @@ import org.springframework.web.bind.annotation.*;
 import ro.licenta.taberemanager.dto.LoginRequest;
 import ro.licenta.taberemanager.dto.LoginResponse;
 import ro.licenta.taberemanager.model.User;
+import ro.licenta.taberemanager.repository.UserRepository;
 import ro.licenta.taberemanager.security.JwtService;
 import ro.licenta.taberemanager.service.AuthService;
+import ro.licenta.taberemanager.service.EmailService;
 import ro.licenta.taberemanager.service.UserServiceInterface;
 
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/autentificare")
@@ -26,6 +29,12 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
@@ -60,6 +69,36 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Email inexistent"));
+
+        // Generăm un token
+        String token = UUID.randomUUID().toString();
+        user.setResetToken(token);
+        userRepository.save(user);
+
+        String resetLink = "http://localhost:3000/reset-password?token=" + token;
+        emailService.sendSimpleEmail(email, "Resetare Parolă", "Accesează acest link pentru a reseta parola: " + resetLink);
+
+        return ResponseEntity.ok("Email trimis cu succes!");
+    }
+
+    // metoda care sa primeasca parola noua si tokenul
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
+        User user = userRepository.findByResetToken(token) // Trebuie să adaugi metoda asta în UserRepository
+                .orElseThrow(() -> new RuntimeException("Token invalid"));
+
+        //schimba parola
+        passwordEncoder.encode(newPassword);
+        user.setResetToken(null); // Șterge token-ul după utilizare
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Parolă schimbată!");
     }
 
 

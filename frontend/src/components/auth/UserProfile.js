@@ -263,264 +263,257 @@ const handleStergereMembru = async(idMembru, prenumeMembru)=>{
 
 
   return(
-  <div className="container mt-5">
-        {/* HEADER PROFIL */}
-        <div className="card shadow p-4 text-center mb-5">
-          <h1 className="text-success fw-bold">🏕️ Profilul Meu</h1>
-          <p className="lead mt-2 text-muted">Gestionarea contului și a înscrierilor familiei tale.</p>
-          <hr />
-          <div className="d-flex justify-content-between align-items-center flex-wrap px-3">
-            <div className="alert alert-info mb-0 py-2">
-              Utilizator curent: <strong>{username}</strong>
+   <div style={{ background: '#F8F9FB', minHeight: '100vh', fontFamily: "'Inter', -apple-system, sans-serif" }}>
+
+        {/* ── Profile header bar ── */}
+        <div style={{ background: '#fff', borderBottom: '1px solid #E4E7EC', padding: '0 32px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#DCFCE7', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '14px' }}>
+              {username.slice(0,2).toUpperCase()}
             </div>
-            <button className="btn btn-danger" onClick={handleLogout}>
-              Logout (Ieșire)
-            </button>
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: '#101828' }}>{username}</div>
+              <div style={{ fontSize: '11px', color: '#98A2B3' }}>Contul meu</div>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            style={{ height: '34px', padding: '0 14px', borderRadius: '8px', border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+          >
+            Deconectare
+          </button>
+        </div>
+
+        {/* ── Page body ── */}
+        <div className="container-fluid" style={{ maxWidth: '1200px', margin: '0 auto', padding: '28px 24px' }}>
+
+          <div className="row g-4">
+
+            {/* ── LEFT: Istoric înscrieri ── */}
+            <div className="col-lg-7">
+              <div style={{ background: '#fff', border: '1px solid #E4E7EC', borderRadius: '12px', overflow: 'hidden' }}>
+
+                {/* Card header */}
+                <div style={{ padding: '18px 24px', borderBottom: '1px solid #E4E7EC', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: 600, color: '#101828' }}>Istoricul Înscrierilor</div>
+                    <div style={{ fontSize: '13px', color: '#98A2B3', marginTop: '2px' }}>{inscrieri.length} înregistrări</div>
+                  </div>
+                </div>
+
+                {/* Table */}
+                <div className="table-responsive">
+                  <table className="table mb-0" style={{ fontSize: '13px' }}>
+                    <thead>
+                      <tr style={{ background: '#F8F9FB' }}>
+                        {['Tabăra', 'Participant', 'Data', 'Sumă', 'Status', 'Acțiuni'].map(h => (
+                          <th key={h} style={{ padding: '10px 16px', fontSize: '11px', fontWeight: 600, color: '#98A2B3', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid #E4E7EC', whiteSpace: 'nowrap' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {inscrieri.length > 0 ? (
+                        inscrieri.map((ins) => (
+                          <tr key={ins.id} style={{ borderBottom: '1px solid #F2F4F7' }}>
+                            <td style={{ padding: '13px 16px', fontWeight: 600, color: '#101828' }}>{ins.numeTabara}</td>
+                            <td style={{ padding: '13px 16px', color: '#2563EB' }}>{ins.numeParticipant} {ins.prenumeParticipant}</td>
+                            <td style={{ padding: '13px 16px', color: '#475467' }}>{new Date(ins.dataInscriere).toLocaleDateString()}</td>
+                            <td style={{ padding: '13px 16px', fontWeight: 600, color: '#16A34A' }}>{ins.suma} RON</td>
+                            <td style={{ padding: '13px 16px' }}>
+                              <span style={{ background: ins.statusPlata === 'PLATIT' ? '#DCFCE7' : '#FEF3C7', color: ins.statusPlata === 'PLATIT' ? '#16A34A' : '#D97706', borderRadius: '20px', padding: '3px 10px', fontSize: '11px', fontWeight: 600 }}>
+                                {ins.statusPlata}
+                              </span>
+                              <div style={{ fontSize: '11px', color: '#98A2B3', marginTop: '3px' }}>
+                                {ins.statut === 'CONFIRMAT' ? '✅ Confirmat' : ins.statut}
+                              </div>
+                            </td>
+                            <td style={{ padding: '13px 16px' }}>
+                              <div className="d-flex flex-wrap gap-1">
+                                {ins.statusPlata === 'NEPLATIT' ? (
+                                  <button
+                                    onClick={() => navigate(`/checkout/${ins.id}`)}
+                                    style={{ padding: '4px 10px', borderRadius: '7px', border: 'none', background: '#16A34A', color: '#fff', fontSize: '12px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                  >
+                                    💳 Plătește
+                                  </button>
+                                ) : (
+                                  <>
+                                    <button onClick={() => handleDownloadFactura(ins.id)} style={{ padding: '4px 10px', borderRadius: '7px', border: '1px solid #D0D5DD', background: '#fff', color: '#344054', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>
+                                      📄 Factură
+                                    </button>
+                                    <button onClick={() => setQrOpen(ins.id)} style={{ padding: '4px 10px', borderRadius: '7px', border: '1px solid #D0D5DD', background: '#fff', color: '#344054', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>
+                                      QR
+                                    </button>
+                                  </>
+                                )}
+                                <button onClick={() => handleStergere(ins.id)} style={{ padding: '4px 10px', borderRadius: '7px', border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>
+                                  Anulează
+                                </button>
+                                <div className="d-inline-block">
+                                  <input type="file" id={`upload-${ins.id}`} style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, ins.id)} accept=".pdf,.jpg,.png" />
+                                  <label htmlFor={`upload-${ins.id}`} style={{ padding: '4px 10px', borderRadius: '7px', border: '1px solid #D0D5DD', background: '#fff', color: '#344054', fontSize: '12px', fontWeight: 500, cursor: 'pointer', marginBottom: 0 }}>
+                                    ⚕️ Fișă
+                                  </label>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="6" style={{ padding: '48px 24px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '28px', marginBottom: '8px' }}>📋</div>
+                            <div style={{ fontWeight: 600, color: '#101828', fontSize: '14px', marginBottom: '4px' }}>Nicio înscriere încă</div>
+                            <div style={{ color: '#98A2B3', fontSize: '13px' }}>Înscrierile tale vor apărea aici.</div>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* ── RIGHT: Familia mea ── */}
+            <div className="col-lg-5">
+              <div style={{ background: '#fff', border: '1px solid #E4E7EC', borderRadius: '12px', overflow: 'hidden' }}>
+
+                {/* Card header */}
+                <div style={{ padding: '18px 24px', borderBottom: '1px solid #E4E7EC', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: 600, color: '#101828' }}>Familia mea</div>
+                    <div style={{ fontSize: '13px', color: '#98A2B3', marginTop: '2px' }}>{membriiFamilie.length} membri înregistrați</div>
+                  </div>
+                  <button
+                    onClick={() => { setShowForm(!showForm); if (showForm) anuleazaEditare(); }}
+                    style={{ height: '34px', padding: '0 14px', borderRadius: '8px', border: showForm ? '1px solid #D0D5DD' : 'none', background: showForm ? '#fff' : '#16A34A', color: showForm ? '#344054' : '#fff', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+                  >
+                    {showForm ? 'Anulează' : '+ Adaugă'}
+                  </button>
+                </div>
+
+                {/* Form */}
+                {showForm && (
+                  <div style={{ padding: '20px 24px', borderBottom: '1px solid #E4E7EC', background: '#F8F9FB' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: isEditing ? '#D97706' : '#2563EB', marginBottom: '14px' }}>
+                      {isEditing ? '✏️ Editează membru' : 'Membru nou'}
+                    </div>
+                    <form onSubmit={handleAdaugaMembru}>
+                      <div className="row g-2">
+                        <div className="col-6">
+                          <label style={{ fontSize: '12px', fontWeight: 500, color: '#475467', display: 'block', marginBottom: '4px' }}>Nume *</label>
+                          <input type="text" className="form-control form-control-sm" style={{ borderRadius: '7px', borderColor: '#D0D5DD', fontSize: '13px' }} value={nume} onChange={e => setNume(e.target.value)} required />
+                        </div>
+                        <div className="col-6">
+                          <label style={{ fontSize: '12px', fontWeight: 500, color: '#475467', display: 'block', marginBottom: '4px' }}>Prenume *</label>
+                          <input type="text" className="form-control form-control-sm" style={{ borderRadius: '7px', borderColor: '#D0D5DD', fontSize: '13px' }} value={prenume} onChange={e => setPrenume(e.target.value)} required />
+                        </div>
+                        <div className="col-6">
+                          <label style={{ fontSize: '12px', fontWeight: 500, color: '#475467', display: 'block', marginBottom: '4px' }}>Data Nașterii *</label>
+                          <input type="date" className="form-control form-control-sm" style={{ borderRadius: '7px', borderColor: '#D0D5DD', fontSize: '13px' }} value={dataNasterii} onChange={e => setDataNasterii(e.target.value)} required />
+                        </div>
+                        <div className="col-6">
+                          <label style={{ fontSize: '12px', fontWeight: 500, color: '#475467', display: 'block', marginBottom: '4px' }}>Gen *</label>
+                          <select className="form-select form-select-sm" style={{ borderRadius: '7px', borderColor: '#D0D5DD', fontSize: '13px' }} value={gen} onChange={e => setGen(e.target.value)} required>
+                            <option value="">Selectează...</option>
+                            <option value="M">Masculin (M)</option>
+                            <option value="F">Feminin (F)</option>
+                          </select>
+                        </div>
+                        <div className="col-12">
+                          <label style={{ fontSize: '12px', fontWeight: 500, color: '#475467', display: 'block', marginBottom: '4px' }}>Alergii</label>
+                          <input type="text" className="form-control form-control-sm" style={{ borderRadius: '7px', borderColor: '#D0D5DD', fontSize: '13px' }} placeholder="ex: Alune, Lactoză" value={alergii} onChange={e => setAlergii(e.target.value)} />
+                        </div>
+                        <div className="col-12">
+                          <label style={{ fontSize: '12px', fontWeight: 500, color: '#475467', display: 'block', marginBottom: '4px' }}>Probleme Medicale</label>
+                          <input type="text" className="form-control form-control-sm" style={{ borderRadius: '7px', borderColor: '#D0D5DD', fontSize: '13px' }} placeholder="ex: Astm, Diabet" value={problemeMedicale} onChange={e => setProblemeMedicale(e.target.value)} />
+                        </div>
+                        <div className="col-6">
+                          <label style={{ fontSize: '12px', fontWeight: 500, color: '#475467', display: 'block', marginBottom: '4px' }}>Telefon *</label>
+                          <input type="text" className="form-control form-control-sm" style={{ borderRadius: '7px', borderColor: '#D0D5DD', fontSize: '13px' }} placeholder="07xx xxx xxx" value={telefon} onChange={e => setTelefon(e.target.value)} required />
+                        </div>
+                        <div className="col-6">
+                          <label style={{ fontSize: '12px', fontWeight: 500, color: '#475467', display: 'block', marginBottom: '4px' }}>Contact Urgență *</label>
+                          <input type="text" className="form-control form-control-sm" style={{ borderRadius: '7px', borderColor: '#D0D5DD', fontSize: '13px' }} placeholder="07xx xxx xxx" value={contactUrgenta} onChange={e => setContactUrgenta(e.target.value)} required />
+                        </div>
+                        <div className="col-12 d-flex gap-2 mt-1">
+                          <button type="submit" style={{ flex: 1, height: '34px', borderRadius: '8px', border: 'none', background: isEditing ? '#D97706' : '#2563EB', color: '#fff', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
+                            {isEditing ? '💾 Salvează modificările' : '💾 Salvează'}
+                          </button>
+                          {isEditing && (
+                            <button type="button" onClick={anuleazaEditare} style={{ height: '34px', padding: '0 14px', borderRadius: '8px', border: '1px solid #D0D5DD', background: '#fff', color: '#344054', fontSize: '13px', cursor: 'pointer' }}>
+                              Anulează
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                {/* Members list */}
+                <div style={{ maxHeight: '440px', overflowY: 'auto' }}>
+                  {membriiFamilie.length > 0 ? (
+                    membriiFamilie.map((membru) => {
+                      const detalii = getDetaliiMembru(membru.dataNasterii);
+                      return (
+                        <div key={membru.id} style={{ padding: '14px 24px', borderBottom: '1px solid #F2F4F7', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: 38, height: 38, borderRadius: '50%', background: detalii.esteAdult ? '#EFF6FF' : '#DCFCE7', color: detalii.esteAdult ? '#2563EB' : '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '17px', flexShrink: 0 }}>
+                              {detalii.emoji}
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 600, fontSize: '13px', color: '#101828' }}>{membru.nume} {membru.prenume}</div>
+                              <div style={{ fontSize: '12px', color: '#98A2B3', marginTop: '2px' }}>
+                                {new Date(membru.dataNasterii).toLocaleDateString()} · {detalii.varsta} ani
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {membru.alergii && (
+                              <span style={{ background: '#FEE2E2', color: '#DC2626', borderRadius: '20px', padding: '2px 8px', fontSize: '11px', fontWeight: 600 }}>Alergii</span>
+                            )}
+                            <span style={{ background: '#F2F4F7', border: '1px solid #E4E7EC', borderRadius: '20px', padding: '2px 8px', fontSize: '11px', color: '#475467', fontWeight: 500 }}>
+                              {detalii.eticheta}
+                            </span>
+                            <button title="Editează" onClick={() => pornesteEditareMembru(membru)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '2px' }}>✏️</button>
+                            <button title="Șterge" onClick={() => handleStergereMembru(membru.id, membru.prenume)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '2px' }}>🗑️</button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '28px', marginBottom: '8px' }}>👨‍👩‍👧‍👦</div>
+                      <div style={{ fontWeight: 600, color: '#101828', fontSize: '14px', marginBottom: '4px' }}>Niciun membru adăugat</div>
+                      <div style={{ color: '#98A2B3', fontSize: '13px' }}>Apasă pe „+ Adaugă" pentru a înregistra copiii tăi.</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        {/* DISPUNERE PE DOUĂ COLOANE */}
-        <div className="row g-4">
-
-          {/* COLOANA STÂNGA: ISTORIC ÎNSCRIERI */}
-          <div className="col-lg-7">
-            <div className="card shadow p-4 h-100">
-              <h3 className="mb-4 fw-bold text-secondary">📜 Istoricul înscrierilor</h3>
-              <div className="table-responsive">
-                <table className="table table-hover">
-                  <thead className="table-light">
-                    <tr>
-                      <th>Tabăra</th>
-                      <th> Participant</th>
-                      <th>Data Înscriere</th>
-                      <th>Sumă</th>
-                      <th>Status</th>
-                      <th>Acțiuni</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {inscrieri.length > 0 ? (
-                      inscrieri.map((ins) => (
-                        <tr key={ins.id} className="align-middle">
-                          <td className="fw-bold text-dark">{ins.numeTabara}</td>
-                         <td className="text-primary">{ins.numeParticipant} {ins.prenumeParticipant}</td>
-                          <td>{new Date(ins.dataInscriere).toLocaleDateString()}</td>
-                          <td><span className="text-success fw-bold">{ins.suma} RON</span></td>
-                          <td>
-                            <span className={`badge ${ins.statusPlata === 'PLATIT' ? 'bg-success' : 'bg-warning text-dark'}`}>
-                              {ins.statusPlata}
-                            </span>
-                          </td>
-
-{/* ZONA DE ACȚIUNI DINAMICE */}
-                        <td className="d-flex gap-2 flex-wrap">
-
-                          {/* Dacă este NEPLĂTIT, se afiseaza butonul de Plată și de Anulare */}
-                          {ins.statusPlata === 'NEPLATIT' ? (
-                            <>
-                              <button
-                                className="btn btn-sm btn-success fw-bold shadow-sm"
-                                onClick={() => navigate(`/checkout/${ins.id}`)}
-                              >
-                                💳 Plătește Acum
-                              </button>
-
-                            </>
-                          ) : (
-                            /* Dacă este PLĂTIT, îi da acces la Factură și Ecuson QR */
-                            <>
-                              <button className="btn btn-sm btn-outline-primary fw-bold" onClick={() => handleDownloadFactura(ins.id)}>
-                                📄 Factură
-                              </button>
-                              <button className="btn btn-sm btn-dark fw-bold text-white" onClick={() => setQrOpen(ins.id)}>
-                                Ecuson QR
-                              </button>
-                            </>
-                          )}
-
-                          {/* Butoanele care sunt mereu vizibile: Anulare și Încărcare Fișă */}
-                           <button className="btn btn-sm btn-outline-danger fw-bold" onClick={() => handleStergere(ins.id)}>
-                                ❌ Anulează
-                           </button>
-
-                          {/* Butonul de Încărcare Fișă Medicală rămâne vizibil indiferent de status */}
-                          <div className="d-inline-block">
-                            <input
-                              type="file"
-                              id={`upload-${ins.id}`}
-                              style={{ display: 'none' }}
-                              onChange={(e) => handleFileUpload(e, ins.id)}
-                              accept=".pdf,.jpg,.png"
-                            />
-                            <label htmlFor={`upload-${ins.id}`} className="btn btn-sm btn-outline-success fw-bold mb-0">
-                              ⚕️ Încarcă Fişă
-                            </label>
-                          </div>
-
-                        </td>
-                      </tr>
-
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="5" className="text-center text-muted py-4">Nu ai efectuat nicio înscriere până acum.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+        {/* ── QR Modal ── */}
+        {qrOpen && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+            <div style={{ background: '#fff', borderRadius: '16px', padding: '32px', textAlign: 'center', width: '300px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: '#101828', marginBottom: '6px' }}>Ecuson Check-in</div>
+              <div style={{ fontSize: '13px', color: '#98A2B3', marginBottom: '20px' }}>Prezintă coordonatorului la autocar.</div>
+              <div style={{ background: '#F8F9FB', borderRadius: '12px', padding: '20px', display: 'inline-block', marginBottom: '20px' }}>
+                <QRCode value={qrOpen.toString()} size={180} />
               </div>
+              <button onClick={() => setQrOpen(null)} style={{ width: '100%', height: '38px', borderRadius: '8px', border: 'none', background: '#101828', color: '#fff', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
+                Închide
+              </button>
             </div>
           </div>
+        )}
 
-          {/* COLOANA DREAPTA: MEMBRII FAMILIEI (HOUSEHOLDERS) */}
-          <div className="col-lg-5">
-            <div className="card shadow p-4 h-100 border-start border-success border-3">
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <h3 className="fw-bold text-success mb-0">👨‍👩‍👧‍👦 Familia mea</h3>
-                <button
-                  className={`btn btn-sm ${showForm ? 'btn-secondary' : 'btn-success'} fw-bold`}
-                  onClick={() => setShowForm(!showForm)}
-                >
-                  {showForm ? 'Ascunde' : '➕ Adaugă'}
-                </button>
-              </div>
+      </div>
+    );
+  }
 
-              {/* FORMULARUL DE ADĂUGARE/EDITARE (Apare doar când dai click pe Adaugă/Editare) */}
-              {showForm && (
-                <form onSubmit={handleAdaugaMembru} className="bg-light p-3 rounded mb-4 border shadow-sm">
-                   <h5 className={`mb-3 fw-bold ${isEditing ? 'text-warning' : 'text-primary'}`}>
-                     {isEditing ? '✏️ Editează membru familie' : 'Date membru nou'}
-                   </h5>
-                  <div className="row g-2">
-                    <div className="col-6 mb-2">
-                      <label className="form-label small mb-1">Nume *</label>
-                      <input type="text" className="form-control form-control-sm" value={nume} onChange={e => setNume(e.target.value)} required />
-                    </div>
-
-                    <div className="col-6 mb-2">
-                      <label className="form-label small mb-1">Prenume *</label>
-                      <input type="text" className="form-control form-control-sm" value={prenume} onChange={e => setPrenume(e.target.value)} required />
-                    </div>
-                  </div>
-
-                  <div className="mb-2">
-                    <label className="form-label small mb-1">Data Nașterii *</label>
-                    <input type="date" className="form-control form-control-sm" value={dataNasterii} onChange={e => setDataNasterii(e.target.value)} required />
-                  </div>
-
-                  <div className="mb-2">
-                   <label className="form-label small mb-1">Gen *</label>
-                    <select className="form-select form-select-sm" value={gen} onChange={e => setGen(e.target.value)} required>
-                       <option value="">Selectează...</option>
-                       <option value="M">Masculin (M)</option>
-                       <option value="F">Feminin (F)</option>
-                     </select>
-                  </div>
-
-                  <div className="mb-2">
-                    <label className="form-label small mb-1">Alergii (dacă există)</label>
-                    <input type="text" className="form-control form-control-sm" placeholder="ex: Alun, Lactoză" value={alergii} onChange={e => setAlergii(e.target.value)} />
-                  </div>
-
-                  <div className="mb-2">
-                    <label className="form-label small mb-1">Probleme Medicale</label>
-                    <input type="text" className="form-control form-control-sm" placeholder="ex: Astm, Diabet" value={problemeMedicale} onChange={e => setProblemeMedicale(e.target.value)} />
-                  </div>
-
-                  <div className="mb-2">
-                   <label className="form-label small mb-1">Telefon personal (sau al părintelui) *</label>
-                    <input type="text" className="form-control form-control-sm" placeholder="ex: 07xx xxx xxx" value={telefon} onChange={e => setTelefon(e.target.value)} required />
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label small mb-1">Contact Urgență (Telefon) *</label>
-                    <input type="text" className="form-control form-control-sm" placeholder="ex: 07xx xxx xxx" value={contactUrgenta} onChange={e => setContactUrgenta(e.target.value)} required />
-                  </div>
-                 <div className="d-flex gap-2">
-                 <button type="submit" className={`btn btn-sm w-100 fw-bold py-2 ${isEditing ? 'btn-warning text-dark' : 'btn-primary'}`}>
-                {isEditing ? '💾 Salvează Modificările' : '💾 Salvează în Familie'}
-                  </button>
-                  {isEditing && (
-                   <button type="button" className="btn btn-sm btn-outline-secondary py-2" onClick={anuleazaEditare}>
-                    Anulează
-                    </button>
-                   )}
-                      </div>
-                   </form>
-              )}
-
-     {/* LISTA VIZUALĂ CU MEMBRII EXISTENȚI */}
-                 <div className="list-group list-group-flush" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                   {membriiFamilie.length > 0 ? (
-                     membriiFamilie.map((membru) => {
-                       // AICI SE APELEAZA FUNCTIA DE CALCUL PENTRU A SCHIMBA ICONITELE SI TEXTUL
-                       const detalii = getDetaliiMembru(membru.dataNasterii);
-
-                       return (
-                       <div key={membru.id} className="list-group-item px-0 py-3 d-flex align-items-center justify-content-between">
-                         <div className="d-flex align-items-center">
-                           <div className={`${detalii.esteAdult ? 'bg-primary' : 'bg-success'} text-white rounded-circle d-flex align-items-center justify-content-center me-3`} style={{ width: '40px', height: '40px', fontSize: '18px' }}>
-                             {detalii.emoji}
-                           </div>
-                           <div>
-                             <h6 className="mb-0 fw-bold text-dark">{membru.nume} {membru.prenume}</h6>
-                             <small className="text-muted">
-                               🎂 {new Date(membru.dataNasterii).toLocaleDateString()} ({detalii.varsta} ani)
-                             </small>
-                           </div>
-                         </div>
-
-                         {/* ZONA DE ACȚIUNI: BUTOANE EDIT ȘI DELETE */}
-                         <div className="d-flex align-items-center gap-2">
-                           {membru.alergii && <span className="badge bg-danger-subtle text-danger rounded-pill small">Alergii</span>}
-                           <span className="badge bg-light text-secondary border">{detalii.eticheta}</span>
-
-                           {/* BUTON EDIT */}
-                           <button className="btn btn-sm btn-link text-warning p-0 fs-5 shadow-none text-decoration-none" title="Editează membru" onClick={() => pornesteEditareMembru(membru)}  >
-                             ✏️
-                           </button>
-
-                           {/* BUTON DELETE */}
-                           <button
-                             className="btn btn-sm btn-link text-danger p-0 fs-5 shadow-none text-decoration-none" title="Șterge din familie" onClick={() => handleStergereMembru(membru.id, membru.prenume)} >
-                             🗑️
-                           </button>
-                         </div>
-                       </div>
-                     );
-                    })
-                   ) : (
-                     <div className="text-center py-5 text-muted">
-                       <p className="mb-1">Nu ai adăugat niciun membru în familia ta.</p>
-                       <small>Apasă pe butonul de mai sus pentru a-ți înregistra copiii.</small>
-                     </div>
-                   )}
-                 </div>
-
-               </div>
-             </div>
-
-           </div>
-
-           {qrOpen && (
-                   <div className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style={{ backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 9999 }}>
-                     <div className="bg-white p-4 rounded text-center shadow-lg">
-                       <h3 className="mb-3 fw-bold text-success">Ecuson Check-in</h3>
-                       <p className="text-muted">Prezintă acest cod coordonatorului la autocar.</p>
-
-                       <div className="bg-light p-3 rounded mb-3 border">
-                         {/* Generează vizual codul QR pe baza ID-ului */}
-                         <QRCode value={qrOpen.toString()} size={200} />
-                       </div>
-
-                       <button className="btn btn-danger w-100 fw-bold" onClick={() => setQrOpen(null)}>
-                         Închide
-                       </button>
-                     </div>
-                   </div>
-                 )}
-
-         </div>
-       );
-     }
-export default Profile;
+  export default Profile;

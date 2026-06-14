@@ -8,7 +8,7 @@ import CampList from './components/CampList';
 import ActivityList from './components/ActivityList';
 import UserList from './components/UserList';
 import Navbar from './components/Navbar';
-import RegistrationList from './components/RegistrationList';
+import RegistrationListManagement from './components/RegistrationListManagement';
 import AddRegistrationForm from './components/AddRegistrationForm';
 import ParticipantList from './components/ParticipantList';
 import LoginPage from './components/auth/LoginPage';
@@ -33,11 +33,32 @@ import Checkout from './components/stripe/Checkout';
 import SuccessPayment from './components/stripe/SuccessPayment';
 import CancelPayment from './components/stripe/CancelPayment';
 import RegistrationDetails from './components/RegistrationDetails';
+import ForgotPassword from './components/auth/ForgotPassword';
+import ResetPassword from './components/auth/ResetPassword';
+import ActivityForm from  './components/ActivityForm';
+import RaportsManager from './components/RaportsManager';
 
 import 'leaflet/dist/leaflet.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+
+//interceptor pentru cereri(se adauga token)
+axios.interceptors.request.use(
+  (config) => {
+    // Luăm token-ul din localStorage
+    const token = localStorage.getItem('token');
+
+    // Dacă există token, îl lipim în Header la orice cerere
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 ///in caz ca tokenul expira
 //se seteaza un "ascultator" pe toate raspunsurile care vin de la backend
@@ -61,6 +82,50 @@ axios.interceptors.response.use(
 );
 
 
+//Componente de protectie rute
+const PrivateRoute = ({ children }) => {
+    const token = localStorage.getItem('token');
+    return token ? children : <Navigate to="/login" />;
+};
+
+const AdminRoute = ({ children }) => {
+    const token    = localStorage.getItem('token');
+    const userRole = localStorage.getItem('userRole');
+    if (!token) return <Navigate to="/login" />;
+    if (userRole !== '1') return <Navigate to="/dashboard" />;
+    return children;
+};
+
+//ruta doar pentru utilizatorul user
+const UserRoute = ({ children }) => {
+    const token    = localStorage.getItem('token');
+    const userRole = localStorage.getItem('userRole');
+    if (!token) return <Navigate to="/login" />;
+    if (userRole !== '5') return <Navigate to="/admin/la dashboard" />;
+    return children;
+};
+
+const CoordRoute = ({ children }) => {
+    // Accesibil de admin și orice coordonator
+    const token    = localStorage.getItem('token');
+    const userRole = localStorage.getItem('userRole');
+    if (!token) return <Navigate to="/login" />;
+    if (userRole !== '1' && userRole !== '2') return <Navigate to="/dashboard" />;
+    return children;
+};
+
+
+const PrincipalRoute = ({ children }) => {
+    // Accesibil doar de admin și coordonator principal
+    const token         = localStorage.getItem('token');
+    const userRole      = localStorage.getItem('userRole');
+    const estePrincipal = localStorage.getItem('esteCoordonatorPrincipal') === 'true';
+    if (!token) return <Navigate to="/login" />;
+    if (userRole === '1') return children;                    // admin trece mereu
+    if (userRole === '2' && estePrincipal) return children;   // principal trece
+    return <Navigate to="/dashboard" />;
+};
+
 function App() {
   // OBSERVAȚIE: Am șters useEffect și axios de aici!
   // Datele sunt acum gestionate în interiorul lui CampList.js
@@ -75,45 +140,53 @@ function App() {
         <h1 className="text-center mb-4">Sistem Gestiune Tabere</h1>
 
         <Routes>
-        {/* Dacă ești logat, mergi la Dashboard. Dacă nu, mergi la Login */}
+        {/* Dacă ești logat, mergi la Dashboard(user). Dacă nu, mergi la Login */}
        //<Route path="/" element ={isAuthenticated ?<Navigate to="/dashboard" /> : <Navigate to ="/login" />}/>
+                {/* Publice */}
+                    <Route path="/"              element={<Navigate to="/dashboard" />} />
+                    <Route path="/dashboard"     element={<Dashboard />} />
+                    <Route path="/login"         element={<LoginPage />} />
+                    <Route path="/admin-login"   element={<AdminLoginPage />} />
+                    <Route path="/tabere"        element={<CampList />} />
+                    <Route path="/harta"         element={<CampsMapPage />} />
+                    <Route path="/camp-details/:id" element={<CampDetails />} />
+                    <Route path="/register"      element={<RegisterPage />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password"  element={<ResetPassword />} />
+                    <Route path="/comparare"     element={<ComparePage />} />
+                    <Route path="/activitati"    element={<ActivityList />} />
 
+                    {/* Utilizator logat (orice rol) */}
+                    <Route path="/user-profile"  element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+                    <Route path="/checkout/:id"  element={<PrivateRoute><Checkout /></PrivateRoute>} />
+                    <Route path="/success-plata" element={<PrivateRoute><SuccessPayment /></PrivateRoute>} />
+                    <Route path="/cancel-plata"  element={<PrivateRoute><CancelPayment /></PrivateRoute>} />
 
-         //oricine poate accesa pagina principala
-         <Route path="/dashboard" element={<Dashboard />}/>
+                    {/* User (sau viitor participant)*/}
+                     <Route path="/add-registration" element={<UserRoute><AddRegistrationForm /></UserRoute>} />
 
-          {/* Protejăm ruta de Profil */}
-         <Route path="/user-profile" element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" />} />
-         <Route path="/coordonator-profile" element={<CoordonatorProfile />} />
+                    {/* Coordonator și Admin */}
+                    <Route path="/coordonator-profile" element={<CoordRoute><CoordonatorProfile /></CoordRoute>} />
+                    <Route path="/prezenta"      element={<CoordRoute><AttendancePage /></CoordRoute>} />
+                    <Route path="/check-in-out"  element={<CoordRoute><CheckInOutPage /></CoordRoute>} />
+                    <Route path="/panou-medical" element={<CoordRoute><PanouMedical /></CoordRoute>} />
+                    <Route path="/avizier-staff" element={<CoordRoute><InternalAnnouncementsPage /></CoordRoute>} />
+                    <Route path="/broadcast"     element={<CoordRoute><BroadcastPage /></CoordRoute>} />
+                    <Route path="/participanti"  element={<CoordRoute><ParticipantList /></CoordRoute>} />
+                    <Route path="/admin/dashboard" element={<CoordRoute><AdminDashboard /></CoordRoute>} />
 
-         ///Rute publice
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/admin-login" element={<AdminLoginPage />} />
-          <Route path="/tabere" element={<CampList />}/>
-          <Route path="/activitati" element={<ActivityList />} />
-           <Route path="/utilizatori" element={<UserList />} />
-           <Route path="/inscrieri" element={<RegistrationList />} />
-           <Route path="/inscrieri/nou" element={<AddRegistrationForm />} />
-           <Route path="/participanti"element={<ParticipantList />} />
-           <Route path="/register" element={<RegisterPage />} />
-           <Route path="/camp-details/:id" element={<CampDetails />}/>
-           <Route path="/add-registration" element={<AddRegistrationForm />}/>
-           <Route path="/prezenta" element={<AttendancePage/>}/>
-           <Route path="/cazare" element={<AccommodationPage />} />
-           <Route path="/check-in-out" element={<CheckInOutPage />} />
-           <Route path="/harta" element={<CampsMapPage />} />
-           <Route path="/admin/adauga-tabara" element={<AddCampForm />} />
-           <Route path="/admin/adauga-traseu" element={<AddTrailForm />} />
-           <Route path="/admin/dashboard" element={<AdminDashboard/>} />
-           <Route path="/panou-medical" element={<PanouMedical />} />
-          <Route path="/comparare" element={<ComparePage />} />
-          <Route path="/broadcast" element={<BroadcastPage />} />
-          <Route path="/avizier-staff" element={<InternalAnnouncementsPage />} />
-          <Route path="/checkout/:id" element={<Checkout />} />
-          <Route path="/success-plata" element={<SuccessPayment />} />
-          <Route path="/cancel-plata" element={<CancelPayment />} />
-          <Route path="/admin/inscrieri/:id" element={<RegistrationDetails />} />
+                    {/* Coordonator Principal și Admin */}
+                    <Route path="/inscrieri"     element={<PrincipalRoute><RegistrationListManagement /></PrincipalRoute>} />
+                    <Route path="/cazare"        element={<PrincipalRoute><AccommodationPage /></PrincipalRoute>} />
+                    <Route path="/raport-manager" element={<PrincipalRoute><RaportsManager /></PrincipalRoute>} />
+                    <Route path="/admin/inscrieri/:id" element={<PrincipalRoute><RegistrationDetails /></PrincipalRoute>} />
+                    <Route path="/admin/adauga-activitate" element={<PrincipalRoute><ActivityForm /></PrincipalRoute>} />
+                    <Route path="/admin/adauga-traseu" element={<PrincipalRoute><AddTrailForm /></PrincipalRoute>} />
 
+                    {/* Doar Admin */}
+                    <Route path="/admin/utilizatori"   element={<AdminRoute><UserList /></AdminRoute>} />
+                    <Route path="/admin/adauga-tabara" element={<AdminRoute><AddCampForm /></AdminRoute>} />
+                  />
         </Routes>
       </div>
     </Router>

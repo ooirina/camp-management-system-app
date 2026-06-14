@@ -116,17 +116,26 @@ const CoordinatorProfile = () => {
        const handleSetTabaraActiva=(e) =>{
           const idSelectat =e.target.value;
           const numeTabara =e.target.options[e.target.selectedIndex].text;
+          const userId = localStorage.getItem('userId');
 
           if(idSelectat){
             localStorage.setItem('tabaraActivaId', idSelectat);
             localStorage.setItem('tabaraActivaNume', numeTabara);
             setTabaraActivaId(idSelectat);
+            ///verifica daca e coordonator principal al taberei selectate
+             axios.get(`http://localhost:8080/tabere/${idSelectat}`)
+                        .then(res => {
+                            const estePrincipal = String(res.data.idCoordonatorPrincipal) === String(userId);
+                            localStorage.setItem('esteCoordonatorPrincipal', estePrincipal);
+                        });
+
             toast.success( `Context schimbat! Ești activ în: ${numeTabara}`);
           }
           else{
             //daca selecteaza optiunea goala, se curata memoria
             localStorage.removeItem('tabaraActivaId');
             localStorage.removeItem('tabaraActivaNume');
+            localStorage.removeItem('esteCoordonatorPrincipal');
             setTabaraActivaId('');
             toast.info("Ai debifat tabăra activă.");
 

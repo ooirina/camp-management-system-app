@@ -39,7 +39,6 @@ public class Inscriere {
     @Column(name="status_plata")
     private String statusPlata;
 
-    private String documentMedical;
 
     @NotNull
     @ManyToOne
@@ -69,4 +68,8 @@ public class Inscriere {
 
     @Column(name = "data_checkout")
     private LocalDateTime dataCheckout;
+
+    @Column(name= "document_medical")
+    private String documentMedical;
+
 }

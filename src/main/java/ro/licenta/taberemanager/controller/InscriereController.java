@@ -33,6 +33,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -87,6 +88,16 @@ public class InscriereController {
     public void deleteRegistration(@PathVariable Long id)
     {
         repository.deleteById(id);
+    }
+
+    // Găsește taberele coordonatorului, returnează înscrierile din ele
+    @GetMapping("/coordonator/{idCoordonator}")
+    public List<Inscriere> getInscrieriCoordonator(@PathVariable Long idCoordonator) {
+        // Găsește taberele coordonatorului, returnează înscrierile din ele
+        List<Tabara> tabere = tabaraRepository.findByIdCoordonatorPrincipal(idCoordonator);
+        return tabere.stream()
+                .flatMap(t -> repository.findByTabaraId(t.getId()).stream())
+                .collect(Collectors.toList());
     }
 
     //confimare manuala a înscrierii de către coordonator
