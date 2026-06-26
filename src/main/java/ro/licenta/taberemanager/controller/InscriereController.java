@@ -1,37 +1,32 @@
 package ro.licenta.taberemanager.controller;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import ro.licenta.taberemanager.dto.InscriereDTO;
 import ro.licenta.taberemanager.dto.InscriereDetaliiDTO;
 import ro.licenta.taberemanager.model.Inscriere;
-import ro.licenta.taberemanager.model.Participant;
 import ro.licenta.taberemanager.model.Tabara;
-import ro.licenta.taberemanager.model.User;
 import ro.licenta.taberemanager.repository.InscriereRepository;
-import org.springframework.web.bind.annotation.RequestMapping;
-import ro.licenta.taberemanager.repository.ParticipantRepository;
 import ro.licenta.taberemanager.repository.TabaraRepository;
-import ro.licenta.taberemanager.repository.UserRepository;
+import ro.licenta.taberemanager.service.BugetService;
+import ro.licenta.taberemanager.service.InscriereService;
+import ro.licenta.taberemanager.service.UserServiceInterface;
 import ro.licenta.taberemanager.service.WaitlistEmailService;
 import com.lowagie.text.Document;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
+
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.io.File;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,54 +36,71 @@ import java.util.stream.Collectors;
 public class InscriereController {
 
     private final InscriereRepository repository;
-    private final ParticipantRepository participantRepository;
-    private final UserRepository userRepository;
     private final TabaraRepository tabaraRepository;
     private final WaitlistEmailService waitlistEmailService;
+    private final InscriereService inscriereService;
+    private final BugetService bugetService;
+    private final UserServiceInterface userService;
+    // ParticipantRepository și UserRepository eliminate — folosim serviciile lor
 
-    public InscriereController(InscriereRepository repository,ParticipantRepository participantRepository,UserRepository userRepository,TabaraRepository tabaraRepository, WaitlistEmailService waitlistEmailService){
-        this.repository=repository;
-        this.participantRepository = participantRepository;
-        this.userRepository = userRepository;
-        this.tabaraRepository=tabaraRepository;
-        this.waitlistEmailService=waitlistEmailService;
-
+    public InscriereController(InscriereRepository repository,
+                               TabaraRepository tabaraRepository,
+                               WaitlistEmailService waitlistEmailService,
+                               InscriereService inscriereService,
+                               BugetService bugetService,
+                               UserServiceInterface userService) {
+        this.repository = repository;
+        this.tabaraRepository = tabaraRepository;
+        this.waitlistEmailService = waitlistEmailService;
+        this.inscriereService = inscriereService;
+        this.bugetService = bugetService;
+        this.userService = userService;
     }
-
 
     @GetMapping("/lista")
     @ResponseBody
-    public List<Inscriere> getAllRegistrations(){
+    public List<Inscriere> getAllRegistrations() {
         return repository.findAll();
     }
-  //Cautare Activitate dupa id
-  @GetMapping("/{id}")
-  @ResponseBody
-  public Inscriere getRegistrationById(@PathVariable Long id){
-      return repository.findById(id)
-              .orElseThrow(()->new RuntimeException("Inregistrarea nu a fost gasita"));
-  }
+
+    //Cautare Activitate dupa id
+    @GetMapping("/{id}")
+    @ResponseBody
+    public Inscriere getRegistrationById(@PathVariable Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Inregistrarea nu a fost gasita"));
+    }
+
     //PAginare Activitatei
     @GetMapping("/paginat")
     @ResponseBody
-    public Page<Inscriere> getRegistrations(Pageable pageable){
+    public Page<Inscriere> getRegistrations(Pageable pageable) {
         return repository.findAll(pageable);
     }
 
     //creare
     @PostMapping("/creare")
     @ResponseBody
-    public Inscriere createRegistration(@Valid @RequestBody  Inscriere inscriere)
-    {
+    public Inscriere createRegistration(@Valid @RequestBody Inscriere inscriere) {
         return repository.save(inscriere);
     }
-
+/*
+    // Soft-delete: setează ANULAT + înregistrează rambursare
     @DeleteMapping("/stergere/{id}")
     @ResponseBody
-    public void deleteRegistration(@PathVariable Long id)
-    {
-        repository.deleteById(id);
+    public void deleteRegistration(@PathVariable Long id) {
+        repository.findById(id).ifPresent(inscriere -> {
+            inscriere.setStatut("ANULAT");
+            Inscriere salvata = repository.save(inscriere);
+            // Înregistrează rambursarea și trimite email de confirmare anulare
+            userService.findAllUsers().stream()
+                    .filter(u -> u.getId().equals(salvata.getIdPlatitor()))
+                    .findFirst()
+                    .ifPresent(user -> bugetService.inregistreazaAnulare(salvata.getId(), user.getEmail()));
+        });
     }
+    */
+
 
     // Găsește taberele coordonatorului, returnează înscrierile din ele
     @GetMapping("/coordonator/{idCoordonator}")
@@ -105,34 +117,37 @@ public class InscriereController {
     public Inscriere confirmaInscriere(@PathVariable Long id) {
         return repository.findById(id)
                 .map(inscriere -> {
-                   //nu se cofiram daca nu e platita
+                    //nu se cofiram daca nu e platita
                     if ("NEPLATIT".equals(inscriere.getStatusPlata())) {
                         throw new RuntimeException("Eroare: Nu poți confirma o înscriere neplătită!");
                     }
-
                     inscriere.setStatut("CONFIRMAT");
-
                     return repository.save(inscriere);
                 })
                 .orElseThrow(() -> new RuntimeException("Înscrierea cu ID-ul " + id + " nu a fost găsită"));
     }
 
-     //respingere inscriere daca un coordonator a gasit probleme la o inscriere
+    //respingere inscriere daca un coordonator a gasit probleme la o inscriere (date incorecte, duplicat etc.)
+    //se aplica DOAR pe inscrieri deja platite — daca era platita, se inregistreaza automat o rambursare
     @PutMapping("/respinge/{id}")
     public Inscriere respingeInscriere(@PathVariable Long id) {
         return repository.findById(id)
                 .map(inscriere -> {
                     inscriere.setStatut("ANULAT");
-                    return repository.save(inscriere);
+                    Inscriere salvata = repository.save(inscriere);
+                    // Înregistrează rambursare (daca era platita) + trimite email prin BugetService
+                    String emailPlatitor = userService.findUserById(salvata.getIdPlatitor()).getEmail();
+                    bugetService.inregistreazaAnulare(salvata.getId(), emailPlatitor);
+                    return salvata;
                 })
                 .orElseThrow(() -> new RuntimeException("Înscriere negăsită"));
     }
-   //actualizare inscriere
-    @PutMapping("/actualizare/{id}")
-    public Inscriere updateRegistration(@PathVariable Long id, @Valid @RequestBody Inscriere updatedRegistration){
-        return repository.findById(id)
-                .map(registration->{
 
+    //actualizare inscriere
+    @PutMapping("/actualizare/{id}")
+    public Inscriere updateRegistration(@PathVariable Long id, @Valid @RequestBody Inscriere updatedRegistration) {
+        return repository.findById(id)
+                .map(registration -> {
                     // Se verifica si se memoreaza dacă se face trecerea din Waitlist în Pending
                     boolean approvedFromWaitlist = "WAITLIST".equals(registration.getStatut()) &&
                             "PENDING".equals(updatedRegistration.getStatut());
@@ -154,7 +169,6 @@ public class InscriereController {
                         }
                     }
 
-
                     registration.setDataInscriere(updatedRegistration.getDataInscriere());
                     registration.setDataPlata(updatedRegistration.getDataPlata());
                     registration.setStatut(updatedRegistration.getStatut());
@@ -175,104 +189,28 @@ public class InscriereController {
                     // returnare obiectul salvat
                     return savedRegistration;
                 })
-                .orElseThrow(()-> new RuntimeException("Utilizatorul nu a fost gasit"));
+                .orElseThrow(() -> new RuntimeException("Utilizatorul nu a fost gasit"));
     }
 
+    //salvarea dubla dupa completare formular inscriere-> in tabela partcipant si tabela inscriere
     @PostMapping("/save-completa")
-    public Inscriere saveInscriereCompleta(@RequestBody InscriereDTO dto ) {
-        Tabara tabaraVerificare = tabaraRepository.findById(dto.getIdTabara())
-                .orElseThrow(()-> new RuntimeException("Tabara nu exista"));
-
-        long inscrieriCurente = repository.countByTabaraId(tabaraVerificare.getId());
-       String statusInscriere="PENDING";//status default
-
-        if (tabaraVerificare.getCapacitate().longValue() - inscrieriCurente <= 0) {
-          //daca s-au atins locurile maxime, nu se da eroare, ci il pune pe participant la waitlist
-            statusInscriere="WAITLIST";
-            System.out.println("Tabăra este plină. Participantul va fi pus pe WAITLIST.");
-        }
-
-
-        System.out.println("Email primit  trimis de react:[" + dto.getEmailUtilizator()+"]");
-        //cautare user in bd dupa email de google pt a il lega de participant
-        User user= userRepository.findByEmail(dto.getEmailUtilizator()).orElseThrow();
-
-        System.out.println("DEBUG: Java a găsit în DB Userul: " + user.getEmail() + " cu ID: " + user.getId());
-
-        Participant p;
-
-        // Verificăm dacă React ne-a trimis un ID de participant existent (din dropdown)
-        if (dto.getIdParticipant() != null) {
-            System.out.println("S-a selectat un participant existent cu ID: " + dto.getIdParticipant());
-            // Îl extragem din baza de date
-            p = participantRepository.findById(dto.getIdParticipant())
-                    .orElseThrow(() -> new RuntimeException("Participantul selectat nu există în DB!"));
-        } else {
-            System.out.println("Se creează un participant complet NOU.");
-            // Doar dacă nu avem ID, creăm unul nou
-            p = new Participant();
-        }
-
-        // Actualizăm sau setăm datele (în caz că părintele a schimbat un număr de telefon în formular)
-        // 1. salveaza mai întâi participantul-toate datele
-        p.setNume(dto.getNumeParticipant());
-        p.setPrenume(dto.getPrenumeParticipant());
-        p.setDataNasterii(dto.getDataNasterii());
-        p.setGen(dto.getGen());
-        p.setTelefon(dto.getTelefon());
-        p.setAlergii(dto.getAlergii());
-        p.setProblemeMedicale(dto.getProblemeMedicale());
-        p.setContactUrgenta(dto.getContactUrgenta());
-        p.setIdUser(user.getId());
-
-        //salvare :daca e nou , i se da un id nou, dar daca  exista, doar face UPDATE la late
-        Participant participantSalvat = participantRepository.save(p);
-
-        System.out.println("✅ Participant salvat cu ID: " + participantSalvat.getId());
-        System.out.println("DEBUG TABARA: React a trimis ID-ul: " + dto.getIdTabara());
-        // 2. Creăm înscrierea automată(legare participant de tabara)
-        Inscriere i=new Inscriere();
-        i.setDataInscriere(LocalDate.now());
-        i.setStatut(statusInscriere);
-        i.setSuma(BigDecimal.valueOf(dto.getSuma()));
-        i.setDataPlata(LocalDate.now());
-        i.setStatusPlata("NEPLATIT");
-        Tabara tabara =tabaraRepository.findById(dto.getIdTabara())//i.setTabara(dto.getIdTabara());
-                .orElseThrow(()-> new RuntimeException("Tabara nu exista"));
-        i.setTabara(tabara);//se da obiectul intreg , nu foar id ul
-        i.setParticipant(participantSalvat);//id generat automat mai sus
-        //i.setIdPlatitor(user.getId());
-        i.setIdPlatitor(207L); // FORȚĂM manual ID-ul 207 (cu L la final pentru Long)
-        System.out.println("TEST DISPERAT: Trimit ID-ul fix 207 căruia MySQL îi dă bifa verde.");
-
-     // return repository.save(i);
-        // SALVAREA CU FORȚARE:
-        Inscriere salvata = repository.saveAndFlush(i); // Folosește saveAndFlush în loc de save
-        System.out.println("DEBUG FINAL - Platitor: " + i.getIdPlatitor());
-        System.out.println("DEBUG FINAL - Participant: " + i.getParticipant());
-        System.out.println("DEBUG FINAL - Suma: " + i.getSuma());
-        System.out.println("🚀 SUCCES TOTAL! Înscriere salvată.");
-        return salvata;
+    public Inscriere saveInscriereCompleta(@Valid @RequestBody InscriereDTO dto) {
+        return inscriereService.creeazaInscriereCompleta(dto);
     }
 
     @GetMapping("/locuri-disponibile/{tabaraId}")
     public ResponseEntity<Long> getLocuriDisponibile(@PathVariable Long tabaraId) {
         Tabara tabara = tabaraRepository.findById(tabaraId)
                 .orElseThrow(() -> new RuntimeException("Tabara nu exista"));
-
         long inscrieri = repository.countByTabaraId(tabaraId);
-
         long disponibile = tabara.getCapacitate().longValue() - inscrieri;
-
         return ResponseEntity.ok(disponibile > 0 ? disponibile : 0);
     }
 
     @GetMapping("/istoric/{idPlatitor}")
-    public List<InscriereDetaliiDTO> getIstoricUserRegistrations(@PathVariable Long idPlatitor)
-    {
+    public List<InscriereDetaliiDTO> getIstoricUserRegistrations(@PathVariable Long idPlatitor) {
         return repository.findDetailedInscrieri(idPlatitor);
     }
-
 
     @GetMapping(value = "/factura/{id}", produces = "application/pdf")
     public void genereazaFacturaPDF(@PathVariable Long id, HttpServletResponse response) throws IOException {
@@ -286,7 +224,6 @@ public class InscriereController {
         // Deschidem o "foaie" albă
         Document document = new Document();
         PdfWriter.getInstance(document, response.getOutputStream());
-
         document.open();
 
         // Desenăm textul pe foaie
@@ -300,41 +237,108 @@ public class InscriereController {
         document.add(new Paragraph("Data Inscriere: " + inscriere.getDataInscriere()));
         document.add(new Paragraph("--------------------------------------------------"));
         document.add(new Paragraph("Va multumim pentru inscriere!"));
-
         document.close();
     }
 
     @PostMapping("/upload-document/{id}")
-    public ResponseEntity <String> uploadDocument(@PathVariable Long id, @RequestParam("file") MultipartFile file){
+    public ResponseEntity<String> uploadDocument(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        try {
+            Inscriere inscriere = repository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Inscrierea nu exista"));
 
-         try{
-             Inscriere inscriere =repository.findById(id)
-                     .orElseThrow(()-> new RuntimeException("Inscrierea nu exista"));
-           //se defineste unde se salveaza fisierele(care e folserul uploads din proeict
-             String uploadDir =System.getProperty("user.dir")+ "/uploads/";
-             File directory = new File(uploadDir);
-             if(!directory.exists()){
-                 directory.mkdir();//se creeaza folderul daca nu exista
+            // Validare — fisa medicala trebuie incarcata exclusiv ca PDF
+            String contentType = file.getContentType();
+            String numeOriginal = file.getOriginalFilename();
+            boolean esteExtensiePdf = numeOriginal != null && numeOriginal.toLowerCase().endsWith(".pdf");
+            boolean esteContentTypePdf = "application/pdf".equals(contentType);
 
-             }
+            if (!esteExtensiePdf || !esteContentTypePdf) {
+                return ResponseEntity.badRequest()
+                        .body("Fișa medicală trebuie încărcată exclusiv în format PDF.");
+            }
 
-             /// curatare numele  fisierului si il salvam
-           String fileName= "Med_" +id + "_"+file.getOriginalFilename().replace(" ","_");
-           Path filePath =Paths.get(uploadDir+ fileName);
-           Files.write(filePath, file.getBytes());
+            //se defineste unde se salveaza fisierele(care e folserul uploads din proeict
+            String uploadDir = System.getProperty("user.dir") + "/uploads/";
+            File directory = new File(uploadDir);
+            if (!directory.exists()) {
+                directory.mkdir(); //se creeaza folderul daca nu exista
+            }
+            /// curatare numele fisierului si il salvam
+            String fileName = "Med_" + id + "_" + numeOriginal.replace(" ", "_");
+            Path filePath = Paths.get(uploadDir + fileName);
+            Files.write(filePath, file.getBytes());
 
-           //Salvare doar numele in baza de date
-             inscriere.setDocumentMedical(fileName);
-             repository.save(inscriere);
-
-             return ResponseEntity.ok("Fisier salvat cu succes!");
-         }
-         catch(Exception e)
-         {
-             e.printStackTrace();
-             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Eroare la salvarea fisierului.");
-         }
-
+            //Salvare doar numele in baza de date
+            inscriere.setDocumentMedical(fileName);
+            repository.save(inscriere);
+            return ResponseEntity.ok("Fisier salvat cu succes!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Eroare la salvarea fisierului.");
+        }
     }
+
+    // se setează ANULAT + verificare perioadă tabără + (rambursare-inca nu)
+    @DeleteMapping("/stergere/{id}")
+    @ResponseBody
+    public ResponseEntity<String> deleteRegistration(@PathVariable Long id) {
+        try {
+            inscriereService.sterge(id);
+            return ResponseEntity.ok("Înscrierea a fost anulată cu succes.");
+        } catch (RuntimeException e) {
+            // Mesajul de eroare ajunge direct în frontend
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /// toate inscriereile admin
+    @GetMapping("/toate")
+    public List<Inscriere> getToare() {
+        return repository.findAll();
+    }
+
+    // Descărcare protejată a fișei medicale — doar plătitorul înscrierii, coordonatorul sau adminul
+    // Identitatea e extrasă din tokenul JWT (Authentication), nu din ce trimite clientul
+    @GetMapping("/{id}/fisa-medicala")
+    public ResponseEntity<?> descarcaFisaMedicala(@PathVariable Long id, org.springframework.security.core.Authentication authentication) {
+        Inscriere inscriere = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Inscrierea nu există"));
+
+        String emailAutentificat = authentication.getName();
+        ro.licenta.taberemanager.model.User userCurent = userService.findUserByEmail(emailAutentificat);
+        if (userCurent == null) {
+            return ResponseEntity.status(403).body("Utilizator invalid.");
+        }
+
+        boolean esteProprietar = userCurent.getId().equals(inscriere.getIdPlatitor());
+        boolean esteStaff = userCurent.getIdRol() != null &&
+                (userCurent.getIdRol().intValue() == 1 || userCurent.getIdRol().intValue() == 2);
+
+        if (!esteProprietar && !esteStaff) {
+            return ResponseEntity.status(403).body("Nu ai dreptul să accesezi acest document.");
+        }
+
+        if (inscriere.getDocumentMedical() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            String uploadDir = System.getProperty("user.dir") + "/uploads/";
+            java.nio.file.Path filePath = java.nio.file.Paths.get(uploadDir + inscriere.getDocumentMedical());
+            org.springframework.core.io.Resource resource = new org.springframework.core.io.UrlResource(filePath.toUri());
+
+            if (!resource.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "inline; filename=\"" + inscriere.getDocumentMedical() + "\"")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Eroare la citirea fișierului.");
+        }
+    }
+
 
 }

@@ -65,12 +65,7 @@ const CampsMapPage = () => {
                                     Rezultate găsite: {filteredBySearch.length}
                                 </small>
                             )}
-                            {/*Buton adaugare tabara*/}
-                            <div className="col-md-3 text-end">
-                            <Link to="/admin/adauga-tabara" className="btn btn-success w-100 fw-bold shadow-sm">
-                                    ➕ Adaugă Tabără
-                             </Link>
-                             </div>
+
                         </div>
 
 

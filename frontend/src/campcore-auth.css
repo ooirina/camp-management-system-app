@@ -1,0 +1,285 @@
+.cc-auth-bg {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(150deg, #e8f5e9 0%, #f9fbe7 55%, #e0f2f1 100%);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+.cc-auth-bg-admin {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(150deg, #fce4ec 0%, #fafafa 55%, #ffebee 100%);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ---------- Card auth ---------- */
+.cc-auth-card {
+  width: 420px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px 36px 32px;
+  box-shadow: 0 4px 24px rgba(46, 125, 50, 0.10), 0 1px 4px rgba(0,0,0,0.06);
+  border: none;
+  border-top: 4px solid #2E7D32;
+  position: relative;
+}
+
+.cc-auth-card-admin {
+  width: 420px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px 36px 32px;
+  box-shadow: 0 4px 24px rgba(198, 40, 40, 0.12), 0 1px 4px rgba(0,0,0,0.06);
+  border: none;
+  border-top: 4px solid #C62828;
+  position: relative;
+}
+
+/* ---------- Logo / brand mic deasupra cardului ---------- */
+.cc-auth-brand {
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #2E7D32;
+  text-transform: uppercase;
+}
+
+.cc-auth-brand-admin {
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #C62828;
+  text-transform: uppercase;
+}
+
+/* ---------- Titlu ---------- */
+.cc-auth-title {
+  text-align: center;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #1a2e1b;
+  margin-bottom: 28px;
+  letter-spacing: -0.01em;
+}
+
+.cc-auth-title-admin {
+  text-align: center;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #7f0000;
+  margin-bottom: 28px;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Labels ---------- */
+.cc-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 5px;
+  display: block;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Inputs ---------- */
+.cc-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #111827;
+  background: #f9fafb;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.cc-input:focus {
+  border-color: #2E7D32;
+  box-shadow: 0 0 0 3px rgba(46,125,50,0.12);
+  background: #fff;
+}
+
+.cc-input-admin:focus {
+  border-color: #C62828;
+  box-shadow: 0 0 0 3px rgba(198,40,40,0.12);
+  background: #fff;
+}
+
+/* ---------- Butoane principale ---------- */
+.cc-btn-primary {
+  display: block;
+  width: 100%;
+  padding: 11px;
+  background: #2E7D32;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.cc-btn-primary:hover {
+  background: #1b5e20;
+  transform: translateY(-1px);
+}
+
+.cc-btn-primary:disabled {
+  background: #a5d6a7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cc-btn-danger {
+  display: block;
+  width: 100%;
+  padding: 11px;
+  background: #C62828;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.cc-btn-danger:hover {
+  background: #7f0000;
+  transform: translateY(-1px);
+}
+
+/* ---------- Buton Google ---------- */
+.cc-btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  background: #fff;
+  color: #374151;
+  border: 1.5px solid #d1d5db;
+  border-radius: 9px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.cc-btn-google:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* ---------- Buton secundar (pill) ---------- */
+.cc-btn-pill {
+  background: none;
+  border: 1.5px solid #d1d5db;
+  border-radius: 99px;
+  padding: 6px 20px;
+  font-size: 0.82rem;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.cc-btn-pill:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* ---------- Linie separatoare ---------- */
+.cc-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0;
+  color: #9ca3af;
+  font-size: 0.82rem;
+}
+
+.cc-divider::before,
+.cc-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+/* ---------- Text mic / link ---------- */
+.cc-text-sm {
+  font-size: 0.86rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+.cc-link-green {
+  color: #2E7D32;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.cc-link-green:hover {
+  color: #1b5e20;
+}
+
+/* ---------- Badge admin ---------- */
+.cc-badge-danger {
+  display: inline-block;
+  background: #C62828;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 0.18s;
+}
+
+.cc-badge-danger:hover {
+  background: #7f0000;
+}
+
+.cc-badge-primary {
+  display: inline-block;
+  background: #2E7D32;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 0.18s;
+}
+
+.cc-badge-primary:hover {
+  background: #1b5e20;
+}
+
+/* ---------- Iconița mică tabere ---------- */
+.cc-icon-top {
+  font-size: 2rem;
+  display: block;
+  text-align: center;
+  margin-bottom: 4px;
+}

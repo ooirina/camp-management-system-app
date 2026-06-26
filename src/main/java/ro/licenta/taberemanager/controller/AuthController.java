@@ -21,6 +21,7 @@ import java.util.UUID;
 @RequestMapping("/autentificare")
 @CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
+    //folosit in singup
     @Autowired
     private UserServiceInterface userServiceInterface;
     @Autowired
@@ -31,18 +32,15 @@ public class AuthController {
     private AuthService authService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private EmailService emailService;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
-       String type=loginRequest.getLoginType();
+        String type=loginRequest.getLoginType();
         return ResponseEntity.ok(authService.login(loginRequest, type));
     }
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody User user) {
+    public ResponseEntity<String> signup(@Valid @RequestBody User user) {
         // 1. Verificăm dacă email-ul există deja ca să nu avem dubluri
         if (userServiceInterface.findUserByEmail(user.getEmail()) != null) {
             return ResponseEntity.badRequest().body("Eroare: Email-ul este deja utilizat!");
@@ -62,7 +60,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
+    public ResponseEntity<?> register(@Valid @RequestBody User user) {
         try {
             String msg = authService.register(user);
             return ResponseEntity.ok(msg);
@@ -70,16 +68,13 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Email inexistent"));
 
-        // Generăm un token
+        // Generăm un token unic de resetare
         String token = UUID.randomUUID().toString();
-        user.setResetToken(token);
-        userRepository.save(user);
+        // Salvăm token-ul pe user prin service — nu mai accesăm UserRepository direct
+        userServiceInterface.saveResetToken(email, token);
 
         String resetLink = "http://localhost:3000/reset-password?token=" + token;
         emailService.sendSimpleEmail(email, "Resetare Parolă", "Accesează acest link pentru a reseta parola: " + resetLink);
@@ -87,16 +82,26 @@ public class AuthController {
         return ResponseEntity.ok("Email trimis cu succes!");
     }
 
+
     // metoda care sa primeasca parola noua si tokenul
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
-        User user = userRepository.findByResetToken(token) // Trebuie să adaugi metoda asta în UserRepository
-                .orElseThrow(() -> new RuntimeException("Token invalid"));
+
+        // Validare manuala — acest endpoint primeste parola ca String simplu (RequestParam),
+        // nu prin obiectul User, deci adnotarea @Size de pe model nu se aplica automat aici
+        if (newPassword == null || newPassword.length() < 6) {
+            return ResponseEntity.badRequest().body("Parola trebuie să aibă cel puțin 6 caractere");
+        }
+
+        // Căutare user după token prin service
+        User user = userServiceInterface.findUserByResetToken(token);
 
         //schimba parola
-        passwordEncoder.encode(newPassword);
+        // parola criptată trebuie setată pe user, nu ignorată ──
+        // Înainte: passwordEncoder.encode(newPassword) — rezultatul era aruncat!
+        user.setParola(passwordEncoder.encode(newPassword));
         user.setResetToken(null); // Șterge token-ul după utilizare
-        userRepository.save(user);
+        userServiceInterface.saveUser(user);
 
         return ResponseEntity.ok("Parolă schimbată!");
     }

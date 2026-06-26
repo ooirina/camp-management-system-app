@@ -5,11 +5,11 @@ import { toast } from 'react-toastify';
 
 const CoordinatorProfile = () => {
     const [activitati, setActivitati] = useState([]);
-    const [waitlist, setWaitlist]=useState([]);
     const [allTabere, setAllTabere]= useState([]);//ca sa fie acces la numele taberei
-    const [toateInscrierile, setToateInscrierile] = useState([]);//pentru calculuo matematic
+    const [toateInscrierile, setToateInscrierile] = useState([]);//pentru calculul locurilor libere afisate pe orar
     const [loading, setLoading] = useState(true);
     const [tabaraActivaId, setTabaraActivaId]=useState(localStorage.getItem('tabaraActivaId') || '');//pentru tabara aleasa de coordonator pt sincronizarea aplicatiei
+    const [estePrincipalActiv, setEstePrincipalActiv]=useState(localStorage.getItem('esteCoordonatorPrincipal') === 'true');//pentru badge-ul vizual, sincronizat cu localStorage
 
     // Luăm email-ul celui logat
     const email = localStorage.getItem('userEmail');
@@ -29,30 +29,12 @@ const CoordinatorProfile = () => {
         //Aducem activitățile coordonatorului: Apelare ruta pe care am creat-o în backend pentru a aduce doar activitățile lui
         axios.get(`http://localhost:8080/prezenta/activitati-coordonator?email=${email}`)
             .then(resActivitati => {
-                                 const activitatiPermise = resActivitati.data;
-                                 setActivitati(activitatiPermise);
-
-                                 // Extragem ID-urile taberelor de care se ocupă el
-                                 const idUriTabere = new Set();
-                                 activitatiPermise.forEach(act => {
-                                     if (act.tabara?.id)
-                                     idUriTabere.add(act.tabara?.id);
-                                 });
-
-                                 // 2. Aducem toate înscrierile ca să extragem Waitlist-ul
-                                 return axios.get('http://localhost:8080/inscrieri/lista').then(resInscrieri => {
-                                     const toateInscrierile = resInscrieri.data;
-
-                                     // Filtrare doar copiii pe WAITLIST care vor să meargă în taberele LUI
-                                     const cereriAsteptare = toateInscrierile.filter(insc =>
-                                         insc.statut === 'WAITLIST' &&
-                                         insc.tabara &&
-                                         idUriTabere.has(insc.tabara.id)
-                                     );
-
-                                     setWaitlist(cereriAsteptare);
-                                 });
-                             })
+                 setActivitati(resActivitati.data);
+                 // Aducem toate înscrierile, necesare pentru calculul locurilor libere afișate pe orar
+                 return axios.get('http://localhost:8080/inscrieri/lista').then(resInscrieri => {
+                     setToateInscrierile(resInscrieri.data);
+                 });
+            })
             .catch(err => {
                 console.error("Eroare la aducerea orarului:", err);
             })
@@ -62,50 +44,19 @@ const CoordinatorProfile = () => {
          });
     }, [email]);
 
-     //functie care calculeaza locurile libere in timp real
+     //functie care calculeaza locurile libere in timp real, pentru cardurile de activitati din orar
       const getLocuriDisponibile = (idTabara) => {
               const tabara = allTabere.find(t => t.id === idTabara);
-              if (!tabara || !tabara.capacitate) return 0; // Dacă nu găsim tabăra, afișăm 0
+              if (!tabara || !tabara.capacitate) return 0;
 
-              // Numărăm câți copii au locul deja asigurat (PENDING sau CONFIRMAT) în acea tabără
               const locuriOcupate = toateInscrierile.filter(insc => {
-                  const idTab = insc.tabara?.id || insc.tabara?.id;
+                  const idTab = insc.tabara?.id;
                   return idTab === tabara?.id && (insc.statut === 'PENDING' || insc.statut === 'CONFIRMAT');
               }).length;
 
-              // Locuri libere = Capacitate totală - Ocupate
               const locuriLibere = tabara.capacitate - locuriOcupate;
-
-              // Nu vrem să arătăm numere cu minus dacă am forțat noi baza de date
               return locuriLibere > 0 ? locuriLibere : 0;
           };
-
-    //functia care "promoveaza" copilul de pe waitlist
-    const handleAprobaLoc=(inscriere)=>{
-       //pregatire obiectul actualizat cu noul status
-       const inscriereActualizata={
-       ...inscriere,
-       statut: 'PENDING'//trecere din WaitList in PENDING(asteptatre plata)
-       };
-
-       axios.put(`http://localhost:8080/inscrieri/actualizare/${inscriere.id}`, inscriereActualizata)
-           .then(()=>{
-           //scoatere copil din lista de asteptare
-           setWaitlist(prev=> prev.filter(item => item.id !==inscriere.id));
-          //actualizare status copil in lista mare ca sa scada numarul de locuri libere live
-           setToateInscrierile(prev => prev.map(insc =>
-             insc.id === inscriere.id ? { ...insc, statut: 'PENDING' } : insc
-             ));
-
-             toast.success(`Loc aprobat cu succes pentru ${inscriere.participant.nume} ${inscriere.participant.prenume}!`);
-              })
-            .catch(err => {
-               console.error("Eroare completă pentru programator:", err);
-               toast.error("Nu poți aproba! Tabăra este plină. Trebuie să anulezi un alt participant mai întâi.");
-
-               });
-
-      };
 
        // Funcție mică pentru a găsi numele taberei după ID
     const getNumeTabara = (idTabara) => {
@@ -127,6 +78,8 @@ const CoordinatorProfile = () => {
                         .then(res => {
                             const estePrincipal = String(res.data.idCoordonatorPrincipal) === String(userId);
                             localStorage.setItem('esteCoordonatorPrincipal', estePrincipal);
+                            setEstePrincipalActiv(estePrincipal);
+                            window.dispatchEvent(new Event('tabaraActivaSchimbata'));
                         });
 
             toast.success( `Context schimbat! Ești activ în: ${numeTabara}`);
@@ -137,6 +90,8 @@ const CoordinatorProfile = () => {
             localStorage.removeItem('tabaraActivaNume');
             localStorage.removeItem('esteCoordonatorPrincipal');
             setTabaraActivaId('');
+            setEstePrincipalActiv(false);
+            window.dispatchEvent(new Event('tabaraActivaSchimbata'));
             toast.info("Ai debifat tabăra activă.");
 
           }
@@ -176,6 +131,19 @@ const CoordinatorProfile = () => {
                               <small className="text-muted mt-2 d-block">
                                   Această alegere va fi salvată și folosită automat în Cataloage, Panou Medical etc.
                               </small>
+                              {tabaraActivaId && (
+                                  <div className="mt-3">
+                                      {estePrincipalActiv ? (
+                                          <span className="badge bg-success px-3 py-2 fs-6">
+                                              ⭐ Ești Coordonator Principal pe această tabără
+                                          </span>
+                                      ) : (
+                                          <span className="badge bg-secondary px-3 py-2 fs-6">
+                                              Coordonator în echipă
+                                          </span>
+                                      )}
+                                  </div>
+                              )}
                           </div>
                       </div>
                   </div>
@@ -187,55 +155,6 @@ const CoordinatorProfile = () => {
                               <i className="bi bi-clipboard-data me-2"></i>
                               Deschide Avizierul Echipei
                           </Link>
-                      </div>
-                  )}
-
-                  {/*ZONA DE WAITLIST (Apare doar daca sunt cereri in asteptare) */}
-                  {!loading && waitlist.length > 0 && (
-                      <div className="card shadow-sm border-warning mb-5">
-                          <div className="card-header bg-warning text-dark py-3 d-flex justify-content-between align-items-center">
-                              <h4 className="mb-0 fw-bold">⏳ Cereri în Așteptare (Waitlist)</h4>
-                              <span className="badge bg-danger fs-6">{waitlist.length} cereri noi</span>
-                          </div>
-                          <div className="card-body p-0">
-                              <table className="table table-hover mb-0">
-                                  <thead className="table-light">
-                                      <tr>
-                                          <th>Nume Participant</th>
-                                          <th>Tabără</th>
-                                          <th>Data Cererii</th>
-                                          <th className="text-end">Acțiuni</th>
-                                      </tr>
-                                  </thead>
-                                  <tbody>
-                                      {waitlist.map(insc => {
-                                         const locuriLibere = getLocuriDisponibile(insc.tabara?.id);
-                                         return(
-                                          <tr key={insc.id} className="align-middle">
-                                              <td className="fw-bold text-primary">
-                                                  {insc.participant?.nume} {insc.participant?.prenume}
-                                              </td>
-                                              <td>{insc.tabara?.nume}
-                                              {/* BADGE-UL CU LOCURI LIBERE */}
-                                                <span className={`badge ms-2 ${locuriLibere > 0 ? 'bg-success' : 'bg-danger'}`}>
-                                                {locuriLibere} locuri libere
-                                                </span>
-                                              </td>
-                                              <td>{insc.dataInscriere}</td>
-                                              <td className="text-end">
-                                                  <button
-                                                      className="btn btn-sm btn-success fw-bold"
-                                                      onClick={() => handleAprobaLoc(insc)}
-                                                  >
-                                                      ✅ Aprobă Locul
-                                                  </button>
-                                              </td>
-                                          </tr>
-                                        );
-                                     })}
-                                  </tbody>
-                              </table>
-                          </div>
                       </div>
                   )}
 

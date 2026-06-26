@@ -123,30 +123,46 @@ return (
     </div>
 
     {/* ── Raport Bucătărie ── */}
-    {raport && (
+    {raport && (() => {
+      const totalPortii = raport["Total Porții"];
+      const alergii = Object.entries(raport).filter(([key]) => key !== "Total Porții");
+      const totalPortiiSpeciale = alergii.reduce((sum, [, numar]) => sum + numar, 0);
+
+      return (
       <div className="card border-0 shadow-sm mb-4 d-print-none" style={{ borderRadius: '12px' }}>
         <div className="card-header border-0 d-flex align-items-center gap-2" style={{ background: '#EFF6FF', borderRadius: '12px 12px 0 0', padding: '14px 20px' }}>
           <span style={{ color: '#2563EB', fontWeight: 600, fontSize: '14px' }}>📋 Sumar Logistică Bucătărie</span>
         </div>
         <div className="card-body" style={{ padding: '20px' }}>
           <div className="mb-1" style={{ fontSize: '28px', fontWeight: 700, color: '#101828' }}>
-            {raport["Total Porții"]}
+            {totalPortii}
           </div>
           <div className="mb-3" style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#98A2B3', fontWeight: 600 }}>
-            total porții necesare
+            total porții necesare (participanți confirmați și plătiți)
           </div>
-          <div className="d-flex flex-wrap gap-2">
-            {Object.entries(raport)
-              .filter(([key]) => key !== "Total Porții")
-              .map(([alergie, numar]) => (
-                <span key={alergie} style={{ background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: '20px', padding: '4px 12px', fontSize: '13px', fontWeight: 500, color: '#D97706' }}>
-                  {numar}× fără {alergie}
-                </span>
-              ))}
-          </div>
+
+          {alergii.length > 0 ? (
+            <>
+              <div className="mb-2" style={{ fontSize: '13px', color: '#475467' }}>
+                Din care, <strong>{totalPortiiSpeciale}</strong> {totalPortiiSpeciale === 1 ? 'porție specială' : 'porții speciale'} necesare, defalcate pe alergie:
+              </div>
+              <div className="d-flex flex-wrap gap-2">
+                {alergii.map(([alergie, numar]) => (
+                  <span key={alergie} style={{ background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: '20px', padding: '4px 12px', fontSize: '13px', fontWeight: 500, color: '#D97706' }}>
+                    ⚠ {numar} {numar === 1 ? 'porție fără' : 'porții fără'} {alergie}
+                  </span>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div style={{ fontSize: '13px', color: '#98A2B3' }}>
+              Niciun participant confirmat nu are alergii sau probleme medicale alimentare raportate.
+            </div>
+          )}
         </div>
       </div>
-    )}
+      );
+    })()}
 
     {/* ── Tabel principal ── */}
     <div className="card border-0 shadow-sm" style={{ borderRadius: '12px', overflow: 'hidden' }}>

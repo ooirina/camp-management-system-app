@@ -37,10 +37,22 @@ import ForgotPassword from './components/auth/ForgotPassword';
 import ResetPassword from './components/auth/ResetPassword';
 import ActivityForm from  './components/ActivityForm';
 import RaportsManager from './components/RaportsManager';
+import CampManagement from './components/CampManagement';
+import UserDetails from './components/UserDetails';
+import AdminProfile from './components/auth/AdminProfile';
+import CoordinatorBudgetPage from './components/CoordinatorBudgetPage';
+import AdminBudgetPage from './components/AdminBudgetPage';
+import CategoryManagement from './components/CategoryManagement';
+import WaitlistManagement from './components/WaitlistManagement';
+import TrailList from './components/TrailList';
+import EditTrailForm from './components/EditTrailForm';
+import EditActivityForm from './components/EditActivityForm';
 
 import 'leaflet/dist/leaflet.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+import './campcore-auth.css';
 
 
 //interceptor pentru cereri(se adauga token)
@@ -127,8 +139,8 @@ const PrincipalRoute = ({ children }) => {
 };
 
 function App() {
-  // OBSERVAȚIE: Am șters useEffect și axios de aici!
-  // Datele sunt acum gestionate în interiorul lui CampList.js
+  //  Am șters useEffect și axios de aici!
+  // Acum datele sunt gestionate în interiorul lui CampList.js
 
  const isAuthenticated = localStorage.getItem('token');
   return (
@@ -155,6 +167,7 @@ function App() {
                     <Route path="/reset-password"  element={<ResetPassword />} />
                     <Route path="/comparare"     element={<ComparePage />} />
                     <Route path="/activitati"    element={<ActivityList />} />
+                    <Route path="/trasee" element={<TrailList />} />
 
                     {/* Utilizator logat (orice rol) */}
                     <Route path="/user-profile"  element={<PrivateRoute><UserProfile /></PrivateRoute>} />
@@ -173,20 +186,28 @@ function App() {
                     <Route path="/avizier-staff" element={<CoordRoute><InternalAnnouncementsPage /></CoordRoute>} />
                     <Route path="/broadcast"     element={<CoordRoute><BroadcastPage /></CoordRoute>} />
                     <Route path="/participanti"  element={<CoordRoute><ParticipantList /></CoordRoute>} />
-                    <Route path="/admin/dashboard" element={<CoordRoute><AdminDashboard /></CoordRoute>} />
+                    <Route path="/admin-dashboard" element={<CoordRoute><AdminDashboard /></CoordRoute>} />
+                    <Route path="/admin-profile" element={<CoordRoute><AdminProfile /></CoordRoute>} />
 
                     {/* Coordonator Principal și Admin */}
                     <Route path="/inscrieri"     element={<PrincipalRoute><RegistrationListManagement /></PrincipalRoute>} />
                     <Route path="/cazare"        element={<PrincipalRoute><AccommodationPage /></PrincipalRoute>} />
                     <Route path="/raport-manager" element={<PrincipalRoute><RaportsManager /></PrincipalRoute>} />
+                    <Route path="/buget"          element={<PrincipalRoute><CoordinatorBudgetPage /></PrincipalRoute>} />
                     <Route path="/admin/inscrieri/:id" element={<PrincipalRoute><RegistrationDetails /></PrincipalRoute>} />
                     <Route path="/admin/adauga-activitate" element={<PrincipalRoute><ActivityForm /></PrincipalRoute>} />
                     <Route path="/admin/adauga-traseu" element={<PrincipalRoute><AddTrailForm /></PrincipalRoute>} />
+                    <Route path="/waitlist" element={<PrincipalRoute><WaitlistManagement /></PrincipalRoute>} />
+                    <Route path="/admin/editeaza-traseu/:id" element={<PrincipalRoute><EditTrailForm /></PrincipalRoute>} />
+                    <Route path="/admin/editeaza-activitate/:id" element={<PrincipalRoute><EditActivityForm /></PrincipalRoute>} />
 
                     {/* Doar Admin */}
                     <Route path="/admin/utilizatori"   element={<AdminRoute><UserList /></AdminRoute>} />
+                   <Route path="/utilizatori/:id" element={<AdminRoute><UserDetails /></AdminRoute>} />
+                    <Route path="/admin/tabere" element={<AdminRoute><CampManagement /></AdminRoute>} />
                     <Route path="/admin/adauga-tabara" element={<AdminRoute><AddCampForm /></AdminRoute>} />
-                  />
+                    <Route path="/admin/buget-agregat" element={<AdminRoute><AdminBudgetPage /></AdminRoute>} />
+                    <Route path="/admin/categorii" element={<AdminRoute><CategoryManagement /></AdminRoute>} />
         </Routes>
       </div>
     </Router>

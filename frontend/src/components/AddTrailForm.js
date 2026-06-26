@@ -32,8 +32,14 @@ const AddTrailForm=({ idTabaraSelectata})=>{
 
      });
 ///se incarca lista de tabere pentru putea asocia traseul
+///Admin vede toate taberele; Coordonator vede doar cele unde e PRINCIPAL
+     const userId = localStorage.getItem('userId');
+     const userRole = localStorage.getItem('userRole');
      useEffect(()=>{
-        axios.get('http://localhost:8080/tabere/lista')
+        const urlTabere = userRole === '1'
+            ? 'http://localhost:8080/tabere/lista'
+            : `http://localhost:8080/tabere/coordonator-principal/${userId}`;
+        axios.get(urlTabere)
              .then(res=> setTabere(res.data))
              .catch(err=>console.error("Eroare la încărcarea taberelor",err));
      },[]);

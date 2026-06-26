@@ -26,6 +26,8 @@ const AddCampForm = () => {
     const [locatieMutata, setLocatieMutata]=useState(false);
     //vine din bd ca sa populeze drop down
     const[listaCategorii, setListaCategorii]=useState([]);
+    //vine din bd, coordonatori netrepartizati inca pe nicio tabara, pentru dropdown optional
+    const[listaCoordonatori, setListaCoordonatori]=useState([]);
     const [formData, setFormData] = useState({
         nume: '',
         locatie: '',
@@ -38,7 +40,8 @@ const AddCampForm = () => {
         tipPublic: '',
         latitudine: 45.9432,
         longitudine: 24.9668,
-        categorieId:''
+        categorieId:'',
+        idCoordonatorPrincipal: ''
     });
 
     // 1. Funcția care se ocupă de CLICK-UL pe hartă
@@ -72,7 +75,9 @@ const AddCampForm = () => {
          // Copiem tot din formData, dar transformăm categorieId într-o listă de obiecte
              const dataToSend = {
                  ...formData,
-                 categorii: [{ id: formData.categorieId }]
+                 categorii: [{ id: formData.categorieId }],
+                 // Trimitem null dacă nu s-a selectat niciun coordonator — câmp opțional
+                 idCoordonatorPrincipal: formData.idCoordonatorPrincipal || null
              };
 //Trimitem 'dataToSend' în loc de 'formData' ---
       axios.post('http://localhost:8080/tabere/creare', dataToSend, { withCredentials: true })
@@ -89,6 +94,10 @@ const AddCampForm = () => {
     axios.get('http://localhost:8080/categorii/lista')
           .then(res => setListaCategorii(res.data))
           .catch(err => console.error("Eroare la categorii:", err));
+
+    axios.get('http://localhost:8080/utilizatori/coordonatori/lista')
+          .then(res => setListaCoordonatori(res.data))
+          .catch(err => console.error("Eroare la coordonatori:", err));
 
     },[]);
 
@@ -139,6 +148,22 @@ const AddCampForm = () => {
                        {listaCategorii.map(cat => (
                            <option key={cat.id} value={cat.id}>
                                {cat.tip}
+                           </option>
+                       ))}
+                   </select>
+
+                   <label className="small fw-bold text-muted mt-2">Coordonator principal *</label>
+                   <select
+                       className="form-select mb-2"
+                       name="idCoordonatorPrincipal"
+                       value={formData.idCoordonatorPrincipal}
+                       onChange={handleChange}
+                       required
+                   >
+                       <option value="">-- Selectează Coordonatorul Principal --</option>
+                       {listaCoordonatori.map(c => (
+                           <option key={c.id} value={c.id}>
+                               {c.email}
                            </option>
                        ))}
                    </select>

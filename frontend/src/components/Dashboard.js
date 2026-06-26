@@ -15,13 +15,34 @@ function Dashboard() {
             // Salvare date in localStorage ca sa le vada Navbarul
             localStorage.setItem('token', token);
             localStorage.setItem('userEmail', email);
-            localStorage.setItem('userRole', 'USER'); // rol default
 
-            // Curatare token ul din bara pt a fi curat-prevenire
-            navigate('/dashboard', { replace: true });
-
-            // Reincarcare pt ca navbarul sa detecteze noul localStorage
-            window.location.reload();
+            // Aducem ID-ul real al userului din backend după email
+            // (pentru conturile Google, rolul și ID-ul nu vin în URL, doar tokenul și emailul)
+            fetch(`http://localhost:8080/utilizatori/get_id_user?email=${email}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(userId => {
+                localStorage.setItem('userId', userId.toString());
+                // Aducem și rolul real după ID
+                return fetch(`http://localhost:8080/utilizatori/${userId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            })
+            .then(res => res.json())
+            .then(userData => {
+                localStorage.setItem('userRole', userData.idRol?.toString() || '5');
+                // Curatare token din bara pt a fi curat - prevenire
+                navigate('/dashboard', { replace: true });
+                // Reincarcare pt ca navbarul sa detecteze noul localStorage
+                window.location.reload();
+            })
+            .catch(() => {
+                // Fallback dacă cererile eșuează — rol default utilizator
+                localStorage.setItem('userRole', '5');
+                navigate('/dashboard', { replace: true });
+                window.location.reload();
+            });
         }
     }, [location, navigate]);
 

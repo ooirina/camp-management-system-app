@@ -3,7 +3,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
@@ -20,8 +22,11 @@ public class User
     public User() {
     }
     @NotNull
+    @Email(message = "Adresa de email nu este într-un format valid")
     private String email;
+
     @NotNull
+    @Size(min = 6, message = "Parola trebuie să aibă cel puțin 6 caractere")
     @JsonProperty(access= JsonProperty.Access.WRITE_ONLY)
     private String parola;
     @Column(name="id_rol")

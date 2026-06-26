@@ -126,7 +126,7 @@ return (
                 <div className="flex-grow-1 p-5 d-flex flex-column">
                     <div className="mb-4 pb-3 border-bottom">
                         <h3 className="fw-bold mb-1 text-dark">Create Broadcast Message</h3>
-                        <p className="text-muted mb-0">Trimite anunțuri formatate HTML către toți părinții confirmați dintr-o tabără.</p>
+                        <p className="text-muted mb-0">Trimite anunțuri către toți părinții confirmați dintr-o tabără.</p>
                     </div>
 
                     <form onSubmit={handleSendBroadcast} className="d-flex flex-column flex-grow-1">

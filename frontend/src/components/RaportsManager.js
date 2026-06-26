@@ -174,7 +174,7 @@ function RaportsManager() {
   // Aducem lista tabere
   useEffect(() => {
     if (!idCoordonator) return;
-    axios.get(`http://localhost:8080/tabere/coordonator/${idCoordonator}`)
+    axios.get(`http://localhost:8080/tabere/coordonator-principal/${idCoordonator}`)
       .then(res => setTabere(res.data))
       .catch(err => console.error(err));
   }, [idCoordonator]);
@@ -233,7 +233,6 @@ function RaportsManager() {
       { key: 'numeParticipant', label: 'Nume' }, { key: 'prenumeParticipant', label: 'Prenume' },
       { key: 'numeTabara', label: 'Tabăra' }, { key: 'statusSosire', label: 'Sosire' },
       { key: 'dataCheckin', label: 'Check-in' }, { key: 'dataCheckout', label: 'Check-out' },
-      { key: 'statut', label: 'Statut' },
     ],
     participanti: [
       { key: 'numeParticipant', label: 'Nume' }, { key: 'prenumeParticipant', label: 'Prenume' },
@@ -327,7 +326,7 @@ function RaportsManager() {
             value={filtruTabara}
             onChange={e => setFiltruTabara(e.target.value)}
           >
-            <option value="TOATE">Toate taberele</option>
+            <option value="TOATE">Toate taberele mele (unde sunt coordonator principal)</option>
             {tabere.map(t => <option key={t.id} value={t.id}>{t.nume}</option>)}
           </select>
         </div>

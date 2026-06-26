@@ -18,6 +18,7 @@ public class InscriereDetaliiDTO {
     private String statusPlata;
     private String numeParticipant;
     private String prenumeParticipant;
-
+    private String statut;
+    private String documentMedical;//ca sa ajunga la frontend
 
 }

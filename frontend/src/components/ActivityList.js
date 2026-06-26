@@ -8,6 +8,14 @@ const ActivityList = () => {
     const [tabaraSelectata, setTabaraSelectata] = useState('TOATE');
     const navigate = useNavigate(); // Hook-ul pentru a trimite utilizatorul la formular
     const userRole = localStorage.getItem('userRole'); // '5' pentru participant, '1' pentru Admin, etc.
+    const estePrincipal = localStorage.getItem('esteCoordonatorPrincipal') === 'true';
+    const userId = localStorage.getItem('userId');
+
+    // Verifică dacă userul curent e coordonator principal al tabării ACESTEI activități specifice
+    // (nu doar al tabării active din profil, fiindcă lista poate arăta activități din mai multe tabere)
+    const estePrincipalAlActivitatii = (act) => {
+        return act.tabara && String(act.tabara.idCoordonatorPrincipal) === String(userId);
+    };
 
     useEffect(() => {
         fetchActivitati();
@@ -29,7 +37,7 @@ const ActivityList = () => {
     const stergeActivitate = async (id) => {
         if (window.confirm("Ești sigur că vrei să ștergi această activitate? Acțiunea este ireversibilă.")) {
             try {
-                await axios.delete(`http://localhost:8080/activitati/${id}`);
+                await axios.delete(`http://localhost:8080/activitati/stergere/${id}`);
                 fetchActivitati();
             } catch (error) {
                 if (error.response && (error.response.status === 500 || error.response.status === 409)) {
@@ -50,7 +58,7 @@ const ActivityList = () => {
             {/* Header cu Titlu și Buton de Adăugare */}
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2 className="fw-bold mb-0">📅 Agenda Activităților</h2>
-                 {(userRole === '1' || userRole === '2') && (
+                 {(userRole === '1' || (userRole === '2' && estePrincipal)) && (
                 <button
                     className="btn btn-primary shadow-sm"
                     onClick={() => navigate('/admin/adauga-activitate')} // Verifică ruta în App.js!
@@ -90,13 +98,21 @@ const ActivityList = () => {
                                                    </button>
                                                )}
 
-                                    {(userRole === '1' || userRole === '2') && (
+                                    {(userRole === '1' || (userRole === '2' && estePrincipalAlActivitatii(act))) && (
+                                    <>
+                                    <button
+                                        className="btn btn-sm btn-outline-primary"
+                                        onClick={() => navigate(`/admin/editeaza-activitate/${act.id}`)}
+                                    >
+                                        <i className="bi bi-pencil"></i> Editează
+                                    </button>
                                     <button
                                         className="btn btn-sm btn-outline-danger"
                                         onClick={() => stergeActivitate(act.id)}
                                     >
                                         <i className="bi bi-trash"></i> Șterge
                                     </button>
+                                    </>
                                     )}
                                 </div>
                             </div>

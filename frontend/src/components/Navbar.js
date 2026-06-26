@@ -10,9 +10,25 @@ const token = localStorage.getItem('token');
 const navigate =useNavigate();
 const userEmail=localStorage.getItem('userEmail');
 const userRole=localStorage.getItem('userRole');
- const estePrincipal= localStorage.getItem('esteCoordonatorPrincipal') === 'true';
+const [estePrincipal, setEstePrincipal] = useState(localStorage.getItem('esteCoordonatorPrincipal') === 'true');
 
 const location = useLocation();//sa stie navbar unde se afla utiloizatorul pt a reciti memoria localStorage sa verifice daca sunt mesaje noi
+
+// Resincronizare estePrincipal la fiecare schimbare de pagină, ca Navbar-ul să reflecte
+// imediat alegerea tabării active făcută în pagina de profil coordonator
+useEffect(() => {
+    setEstePrincipal(localStorage.getItem('esteCoordonatorPrincipal') === 'true');
+}, [location]);
+
+// Resincronizare și la eveniment custom, declanșat din CoordonatorProfile când se schimbă
+// tabăra activă fără să se navigheze efectiv către altă pagină
+useEffect(() => {
+    const handler = () => {
+        setEstePrincipal(localStorage.getItem('esteCoordonatorPrincipal') === 'true');
+    };
+    window.addEventListener('tabaraActivaSchimbata', handler);
+    return () => window.removeEventListener('tabaraActivaSchimbata', handler);
+}, []);
 
 // Starea pentru a ști dacă aprindem bulina de notificare la "mailbox"
     const [hasNewAnnouncements, setHasNewAnnouncements] = useState(false);
@@ -84,6 +100,8 @@ const handleLogout=()=>{
 
  /// Poate accesa funcții de management (cazare, înscrieri, rapoarte)
   const areAccesManagement = esteAdmin || (esteCoordinator && estePrincipal);
+  // Rapoarte si Buget per-tabara — strict Coordonator Principal (date operationale/financiare locale)
+  const areAccesRapoarteLocale = esteCoordinator && estePrincipal;
 
   return (
        <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm mb-4">
@@ -114,13 +132,7 @@ const handleLogout=()=>{
                                                     <ul className="dropdown-menu">
                                                         <li><Link className="dropdown-item" to="/tabere">Listă Tabere</Link></li>
                                                         <li><Link className="dropdown-item" to="/harta">🗺️ Hartă Tabere</Link></li>
-                                                        {/* Adaugă tabără — doar admin */}
-                                                        {esteAdmin && (
-                                                            <>
-                                                                <li><hr className="dropdown-divider" /></li>
-                                                                <li><Link className="dropdown-item" to="/admin/adauga-tabara">Adaugă Tabără</Link></li>
-                                                            </>
-                                                        )}
+
                                                     </ul>
                                                 </li>
 
@@ -134,7 +146,10 @@ const handleLogout=()=>{
                                                                    <li><Link className="dropdown-item" to="/participanti">Listă Participanți</Link></li>
                                                                    {/* Management înscrieri — doar principal + admin */}
                                                                    {areAccesManagement && (
+                                                                   <>
                                                                        <li><Link className="dropdown-item" to="/inscrieri">Management Înscrieri</Link></li>
+                                                                      <li><Link className="dropdown-item" to="/waitlist">Gestionare Waitlist</Link></li>
+                                                                   </>
                                                                    )}
                                                                    {esteAdmin && (
                                                                        <>
@@ -157,6 +172,7 @@ const handleLogout=()=>{
                                                                </a>
                                                                <ul className="dropdown-menu">
                                                                    <li><Link className="dropdown-item" to="/activitati">Listă Activități</Link></li>
+                                                                    <li><Link className="dropdown-item" to="/trasee">Listă Trasee</Link></li>
                                                                    {/* Adaugă activitate — doar principal + admin */}
                                                                    {areAccesManagement && (
                                                                        <>
@@ -190,10 +206,17 @@ const handleLogout=()=>{
                                                       )}
 
 
-                             {/* RAPOARTE — doar principal + admin */}
-                                                     {areAccesManagement && (
+                             {/* RAPOARTE — strict Coordonator Principal */}
+                                                     {areAccesRapoarteLocale && (
                                                          <li className="nav-item">
                                                              <Link className="nav-link fw-bold" to="/raport-manager">Rapoarte</Link>
+                                                         </li>
+                                                     )}
+
+                             {/* BUGET TABARA — strict Coordonator Principal (buget agregat Admin e in alta sectiune) */}
+                                                     {areAccesRapoarteLocale && (
+                                                         <li className="nav-item">
+                                                             <Link className="nav-link fw-bold" to="/buget">💰 Buget</Link>
                                                          </li>
                                                      )}
 
@@ -201,11 +224,18 @@ const handleLogout=()=>{
                                {esteAdmin && (
                                                            <li className="nav-item dropdown">
                                                                <a className="nav-link dropdown-toggle text-warning" href="#" role="button" data-bs-toggle="dropdown">
+
                                                                    ⚙️ Admin
                                                                </a>
                                                                <ul className="dropdown-menu">
-                                                                   <li><Link className="dropdown-item" to="/utilizatori">Gestiune Utilizatori</Link></li>
+                                                                   <li><Link className="dropdown-item" to="/admin/utilizatori">Gestiune Utilizatori</Link></li>
+                                                                  <li><Link  className="dropdown-item" to="/admin/tabere">Gestiune Tabere</Link></li>
                                                                    <li><Link className="dropdown-item" to="/admin-dashboard">Admin Dashboard</Link></li>
+                                                                   <li><Link className="dropdown-item fw-bold text-success" to="/admin/buget-agregat">💰 Buget Agregat (toate taberele)</Link></li>
+
+                                                                      <li><hr className="dropdown-divider" /></li>
+                                                                     <li><Link className="dropdown-item" to="/admin/adauga-tabara">Adaugă Tabără</Link></li>
+
                                                                </ul>
                                                            </li>
                                                        )}
@@ -216,13 +246,6 @@ const handleLogout=()=>{
                                                                <Link className="nav-link fw-bold" to="/broadcast">Comunicare</Link>
                                                            </li>
                                                        )}
-
-                              {/* RAPOARTE — doar principal + admin */}
-                                                      {areAccesManagement && (
-                                                          <li className="nav-item">
-                                                              <Link className="nav-link fw-bold" to="/raport-manager">Rapoarte</Link>
-                                                          </li>
-                                                      )}
 
                                {/* AVIZIER — doar logați ca coordonator/admin cu tabără activă */}
                                                        {(esteAdmin || esteCoordinator) && (

@@ -3,6 +3,7 @@ package ro.licenta.taberemanager.service;
 import ro.licenta.taberemanager.dto.RaportRowDTO;
 import ro.licenta.taberemanager.model.Inscriere;
 import ro.licenta.taberemanager.model.Participant;
+import ro.licenta.taberemanager.model.Tabara;
 import ro.licenta.taberemanager.repository.InscriereRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,8 @@ public class RapoarteService {
     @Autowired
     private TabaraRepository tabaraRepository;
 
-    // ─── Metodă internă: aduce toate înscrierile unui coordonator (+ filtu tabăra) ──
+    // ─── Metodă internă: aduce toate înscrierile unui coordonator (+ filtru tabăra) ──
+    // Acest raport este rezervat Coordonatorului Principal — vede doar taberele proprii
     private List<Inscriere> getInscrieri(Long idCoordonator, Long idTabara) {
         if (idTabara != null) {
             return inscriereRepository.findByTabara_IdCoordonatorPrincipalAndTabara_Id(idCoordonator, idTabara);
@@ -37,7 +39,7 @@ public class RapoarteService {
         Integer varsta = null;
         if (p.getDataNasterii() != null) {
             varsta = Period.between(p.getDataNasterii(), LocalDate.now()).getYears();
-           }
+        }
 
         return RaportRowDTO.builder()
                 .idInscriere(ins.getId())
@@ -66,19 +68,27 @@ public class RapoarteService {
 
     // ─── Raport Înscrieri ─────────────────────────────────────────────────────
     public List<RaportRowDTO> getRaportInscrieri(Long idCoordonator, Long idTabara) {
-        // AICI verifici dacă are drept să vadă datele
-        boolean estePrincipal = tabaraRepository
-                .findByIdCoordonatorPrincipal(idCoordonator)
-                .stream().anyMatch(t -> t.getId().equals(idTabara));
+        // Verificare acces: daca s-a cerut o tabara specifica, coordonatorul trebuie
+        // sa fie coordonator principal al ACELEI tabere. Daca idTabara e null
+        // (filtrul "Toate taberele"), verificam doar ca are cel putin o tabara asignata.
+        List<Tabara> tabereProprii = tabaraRepository.findByIdCoordonatorPrincipal(idCoordonator);
 
-        if (!estePrincipal) throw new RuntimeException("Acces nepermis");
+        if (idTabara != null) {
+            boolean estePrincipal = tabereProprii.stream().anyMatch(t -> t.getId().equals(idTabara));
+            if (!estePrincipal) throw new RuntimeException("Acces nepermis");
+        } else if (tabereProprii.isEmpty()) {
+            throw new RuntimeException("Acces nepermis");
+        }
 
         return getInscrieri(idCoordonator, idTabara).stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    // ─── Raport Financiar (doar înscrierile, sortate după sumă desc) ──────────
+    // ─── Raport Financiar (doar înscrierile efectiv plătite și încă active, sortate după sumă desc) ──────────
     public List<RaportRowDTO> getRaportFinanciar(Long idCoordonator, Long idTabara) {
         return getInscrieri(idCoordonator, idTabara).stream()
+                // PLATIT confirmă încasarea; excludem ANULAT, fiindcă o anulare voluntară
+                // nu resetează statusPlata, dar suma respectivă urmează să fie rambursată
+                .filter(ins -> "PLATIT".equals(ins.getStatusPlata()) && !"ANULAT".equals(ins.getStatut()))
                 .map(this::toDTO)
                 .sorted((a, b) -> {
                     if (a.getSuma() == null) return 1;
@@ -98,8 +108,10 @@ public class RapoarteService {
     }
 
     // ─── Raport Check-in ─────────────────────────────────────────────────────
+    // ─── Raport Check-in (doar participanții confirmați și plătiți) ─────────
     public List<RaportRowDTO> getRaportCheckin(Long idCoordonator, Long idTabara) {
         return getInscrieri(idCoordonator, idTabara).stream()
+                .filter(ins -> "CONFIRMAT".equals(ins.getStatut()) && "PLATIT".equals(ins.getStatusPlata()))
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -116,4 +128,3 @@ public class RapoarteService {
         return getInscrieri(idCoordonator, idTabara).stream().map(this::toDTO).collect(Collectors.toList());
     }
 }
-

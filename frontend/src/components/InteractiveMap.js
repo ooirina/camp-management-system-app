@@ -88,9 +88,20 @@ const InteractiveMap = ({ camps, onLocationSelect }) => {
                                 }}
                             >
                                 <Popup>
-                                    <strong>Traseu: {trail.nume}</strong><br />
-                                    Dificultate: {trail.dificultate}<br />
-                                    Distanta: {trail.distantaKm} km
+                                    <div style={{ minWidth: '180px' }}>
+                                        <strong style={{ fontSize: '14px' }}>🥾 {trail.nume}</strong><br />
+                                        <span style={{ fontSize: '12px', color: '#666' }}>Tabără: {camp.nume}</span><br />
+                                        <hr style={{ margin: '6px 0' }} />
+                                        <span><strong>Dificultate:</strong> {trail.dificultate}</span><br />
+                                        <span><strong>Distanță:</strong> {trail.distantaKm} km</span><br />
+                                        <span><strong>Durată estimată:</strong> {trail.durataOre} ore</span><br />
+                                        {trail.descriere && (
+                                            <>
+                                                <hr style={{ margin: '6px 0' }} />
+                                                <span style={{ fontSize: '12px', fontStyle: 'italic' }}>{trail.descriere}</span>
+                                            </>
+                                        )}
+                                    </div>
                                 </Popup>
                             </Polyline>
                         ))}

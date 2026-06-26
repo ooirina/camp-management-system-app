@@ -25,6 +25,9 @@ function Profile(){
   const [editingId, setEditingId] = useState(null); // Reține ID-ul membrului pe care îl edităm
 
   const [qrOpen, setQrOpen] = useState(null); // Memorează ID-ul înscrierii pentru care arătăm QR
+  const [showParolaForm, setShowParolaForm] = useState(false); // Ascunde/Arată formularul de schimbare parolă
+  const [parolaVeche, setParolaVeche] = useState('');
+  const [parolaNoua, setParolaNoua] = useState('');
 
    useEffect(()=>{
      const fetchUserData= async()=>{
@@ -69,6 +72,25 @@ function Profile(){
   alert("Te-ai delogat cu succes!");
   navigate('/');//era inainte /login
 
+  };
+
+  // schimbare parola din profil — necesita parola veche pentru verificare
+  const handleSchimbaParola = async (e) => {
+    e.preventDefault();
+    const currentUserId = localStorage.getItem('userId');
+    try {
+      await axios.put(`http://localhost:8080/utilizatori/${currentUserId}/schimbare-parola`, {
+        parolaVeche,
+        parolaNoua
+      });
+      alert("Parola a fost schimbată cu succes!");
+      setParolaVeche('');
+      setParolaNoua('');
+      setShowParolaForm(false);
+    } catch (error) {
+      const msg = error.response?.data || "A apărut o eroare la schimbarea parolei.";
+      alert(msg);
+    }
   };
   //  functie salvare/actualkizare membru de familie in baza de date
      const handleAdaugaMembru = async (e) => {
@@ -129,17 +151,21 @@ function Profile(){
 
       if (confirmare) {
           try {
-              // Trimitem cererea către metoda ta deja existentă în Java
-              await axios.delete(`http://localhost:8080/inscrieri/stergere/${idInscriere}`);
 
+               const token = localStorage.getItem('token');
+
+               await axios.delete(`http://localhost:8080/inscrieri/stergere/${idInscriere}`, {
+                           headers: { Authorization: `Bearer ${token}` } // ← ADĂUGAT
+                });
               // Actualizăm lista pe ecran ca rândul să dispară instantaneu fără să dăm refresh
               // (înlocuiește "inscrieri" și "setInscrieri" cu numele variabilei tale de state dacă e diferit)
               setInscrieri(inscrieri.filter(item => item.id !== idInscriere));
 
               alert("Înscrierea a fost anulată cu succes!");
           } catch (error) {
-              console.error("Eroare la ștergerea înscrierii:", error);
-              alert("A apărut o eroare la ștergere.");
+              //afisare mesaj din backend
+              const msg = error.response?.data || "A apărut o eroare la anulare.";
+              alert(msg);
           }
       }
   };
@@ -235,6 +261,16 @@ const handleStergereMembru = async(idMembru, prenumeMembru)=>{
           const file= event.target.files[0];
           if(!file)
              return;
+
+          // Validare client-side — fisa medicala trebuie sa fie PDF
+          const esteExtensiePdf = file.name.toLowerCase().endsWith('.pdf');
+          const esteTipPdf = file.type === 'application/pdf';
+          if (!esteExtensiePdf || !esteTipPdf) {
+              alert("Fișa medicală trebuie încărcată exclusiv în format PDF.");
+              event.target.value = ''; // resetare input ca userul sa poata alege alt fisier
+              return;
+          }
+
           //folosire
           const formData =new FormData();
           formData.append("file",file);
@@ -256,7 +292,9 @@ const handleStergereMembru = async(idMembru, prenumeMembru)=>{
           }  catch(error)
              {
                 console.error("Eroare la încărcare:", error);
-                 alert("A apărut o eroare la încărcarea documentului.");
+                // Afisam mesajul real trimis de backend (ex: validare format PDF), nu unul generic
+                const mesajEroare = error.response?.data || "A apărut o eroare la încărcarea documentului.";
+                alert(mesajEroare);
              }
 
         }
@@ -276,13 +314,55 @@ const handleStergereMembru = async(idMembru, prenumeMembru)=>{
               <div style={{ fontSize: '11px', color: '#98A2B3' }}>Contul meu</div>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            style={{ height: '34px', padding: '0 14px', borderRadius: '8px', border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
-          >
-            Deconectare
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+              onClick={() => setShowParolaForm(!showParolaForm)}
+              style={{ height: '34px', padding: '0 14px', borderRadius: '8px', border: '1px solid #E4E7EC', background: '#fff', color: '#344054', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+            >
+              Schimbă parola
+            </button>
+            <button
+              onClick={handleLogout}
+              style={{ height: '34px', padding: '0 14px', borderRadius: '8px', border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+            >
+              Deconectare
+            </button>
+          </div>
         </div>
+
+        {showParolaForm && (
+          <div style={{ background: '#fff', borderBottom: '1px solid #E4E7EC', padding: '16px 32px' }}>
+            <form onSubmit={handleSchimbaParola} style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <div>
+                <label style={{ fontSize: '12px', color: '#667085', display: 'block', marginBottom: '4px' }}>Parola veche</label>
+                <input
+                  type="password"
+                  value={parolaVeche}
+                  onChange={(e) => setParolaVeche(e.target.value)}
+                  required
+                  style={{ height: '34px', padding: '0 10px', borderRadius: '8px', border: '1px solid #D0D5DD' }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', color: '#667085', display: 'block', marginBottom: '4px' }}>Parola nouă</label>
+                <input
+                  type="password"
+                  value={parolaNoua}
+                  onChange={(e) => setParolaNoua(e.target.value)}
+                  required
+                  minLength={6}
+                  style={{ height: '34px', padding: '0 10px', borderRadius: '8px', border: '1px solid #D0D5DD' }}
+                />
+              </div>
+              <button
+                type="submit"
+                style={{ height: '34px', padding: '0 16px', borderRadius: '8px', border: 'none', background: '#16A34A', color: '#fff', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+              >
+                Salvează parola nouă
+              </button>
+            </form>
+          </div>
+        )}
 
         {/* ── Page body ── */}
         <div className="container-fluid" style={{ maxWidth: '1200px', margin: '0 auto', padding: '28px 24px' }}>
@@ -314,28 +394,32 @@ const handleStergereMembru = async(idMembru, prenumeMembru)=>{
                     <tbody>
                       {inscrieri.length > 0 ? (
                         inscrieri.map((ins) => (
-                          <tr key={ins.id} style={{ borderBottom: '1px solid #F2F4F7' }}>
-                            <td style={{ padding: '13px 16px', fontWeight: 600, color: '#101828' }}>{ins.numeTabara}</td>
-                            <td style={{ padding: '13px 16px', color: '#2563EB' }}>{ins.numeParticipant} {ins.prenumeParticipant}</td>
-                            <td style={{ padding: '13px 16px', color: '#475467' }}>{new Date(ins.dataInscriere).toLocaleDateString()}</td>
-                            <td style={{ padding: '13px 16px', fontWeight: 600, color: '#16A34A' }}>{ins.suma} RON</td>
-                            <td style={{ padding: '13px 16px' }}>
+                          <React.Fragment key={ins.id}>
+                          <tr>
+                            <td style={{ padding: '13px 16px', fontWeight: 600, color: '#101828', borderBottom: 'none' }}>{ins.numeTabara}</td>
+                            <td style={{ padding: '13px 16px', color: '#2563EB', borderBottom: 'none' }}>{ins.numeParticipant} {ins.prenumeParticipant}</td>
+                            <td style={{ padding: '13px 16px', color: '#475467', borderBottom: 'none' }}>{new Date(ins.dataInscriere).toLocaleDateString()}</td>
+                            <td style={{ padding: '13px 16px', fontWeight: 600, color: '#16A34A', borderBottom: 'none' }}>{ins.suma} RON</td>
+                            <td style={{ padding: '13px 16px', borderBottom: 'none' }}>
                               <span style={{ background: ins.statusPlata === 'PLATIT' ? '#DCFCE7' : '#FEF3C7', color: ins.statusPlata === 'PLATIT' ? '#16A34A' : '#D97706', borderRadius: '20px', padding: '3px 10px', fontSize: '11px', fontWeight: 600 }}>
                                 {ins.statusPlata}
                               </span>
-                              <div style={{ fontSize: '11px', color: '#98A2B3', marginTop: '3px' }}>
-                                {ins.statut === 'CONFIRMAT' ? '✅ Confirmat' : ins.statut}
-                              </div>
                             </td>
-                            <td style={{ padding: '13px 16px' }}>
+                            <td style={{ padding: '13px 16px', borderBottom: 'none' }}>
                               <div className="d-flex flex-wrap gap-1">
-                                {ins.statusPlata === 'NEPLATIT' ? (
+                                {ins.statut === 'ANULAT' ? (
+                                  <span style={{ color: '#98A2B3', fontSize: '12px', fontStyle: 'italic' }}>— Înscriere anulată —</span>
+                                ) : (
+                                  <>
+                                {ins.statusPlata === 'NEPLATIT' && ins.statut !== 'WAITLIST' ? (
                                   <button
                                     onClick={() => navigate(`/checkout/${ins.id}`)}
                                     style={{ padding: '4px 10px', borderRadius: '7px', border: 'none', background: '#16A34A', color: '#fff', fontSize: '12px', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}
                                   >
                                     💳 Plătește
                                   </button>
+                                ) : ins.statut === 'WAITLIST' ? (
+                                  <span style={{ color: '#7C3AED', fontSize: '12px', fontStyle: 'italic' }}>Plata nu e necesară până la confirmarea locului</span>
                                 ) : (
                                   <>
                                     <button onClick={() => handleDownloadFactura(ins.id)} style={{ padding: '4px 10px', borderRadius: '7px', border: '1px solid #D0D5DD', background: '#fff', color: '#344054', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>
@@ -350,14 +434,32 @@ const handleStergereMembru = async(idMembru, prenumeMembru)=>{
                                   Anulează
                                 </button>
                                 <div className="d-inline-block">
-                                  <input type="file" id={`upload-${ins.id}`} style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, ins.id)} accept=".pdf,.jpg,.png" />
+                                  <input type="file" id={`upload-${ins.id}`} style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, ins.id)} accept=".pdf,application/pdf" />
                                   <label htmlFor={`upload-${ins.id}`} style={{ padding: '4px 10px', borderRadius: '7px', border: '1px solid #D0D5DD', background: '#fff', color: '#344054', fontSize: '12px', fontWeight: 500, cursor: 'pointer', marginBottom: 0 }}>
                                     ⚕️ Fișă
                                   </label>
                                 </div>
+                                  </>
+                                )}
                               </div>
                             </td>
                           </tr>
+                          <tr>
+                            <td colSpan="6" style={{ padding: '0 16px 14px 16px', borderBottom: '2px solid #D0D5DD' }}>
+                              <div className="d-flex flex-wrap gap-3" style={{ fontSize: '11px', fontWeight: 600 }}>
+                                {ins.statut === 'CONFIRMAT' && <span style={{ color: '#16A34A' }}>✅ Confirmată</span>}
+                                {ins.statut === 'PENDING' && <span style={{ color: '#D97706' }}>⏳ În așteptarea aprobării coordonatorului</span>}
+                                {ins.statut === 'WAITLIST' && <span style={{ color: '#7C3AED' }}>📋 Pe lista de așteptare</span>}
+                                {ins.statut === 'ANULAT' && <span style={{ color: '#DC2626' }}>❌ Anulată</span>}
+                                <span style={{ color: '#98A2B3', fontWeight: 500 }}>
+                                  {ins.documentMedical
+                                    ? `📎 Fișă medicală: ${ins.documentMedical.replace(/^Med_\d+_/, '')}` // scoate ex Med_42_ ca sa se vada frumos fisa_medicala_ion.pdf în loc de Med_42_fisa_medicala_ion.pdf
+                                    : '⚠️ Fișă medicală neîncărcată'}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                          </React.Fragment>
                         ))
                       ) : (
                         <tr>

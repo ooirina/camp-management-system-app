@@ -34,8 +34,7 @@ public class Participant {
     private String contactUrgenta;
     @Column(name="id_user")
     private Long idUser;
-    @Column(name="id_parinte")
-    private Long idParinte;
+
   //  private String numeGrup;
   @Column(nullable = false, length = 1)
   private String gen; // 'M' sau 'F'

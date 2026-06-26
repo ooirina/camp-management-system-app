@@ -45,8 +45,61 @@ public class SecurityConfig {
               //  .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/autentificare/**","/login/**","/oauth2/**","/tabere/**","/utilizatori/**","/inscrieri/**","/prezenta/**", "/cazare/**", "/flux/**","/map/**","/trasee/**","/categorii/**", "/participanti/**", "/anunturi-interne/**", "/autentificare/forgot-password","/autentificare/reset-password").permitAll()
-                        .anyRequest().authenticated() // PERMITEM TOT (provizoriu, pentru licență)
+                        // Rute complet publice — autentificare, OAuth2, catalog tabere, harta
+                        .requestMatchers("/autentificare/**", "/login/**", "/oauth2/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/tabere/lista", "/tabere/{id}", "/tabere/paginat").permitAll()
+                        .requestMatchers("/map/**", "/trasee/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/categorii/**").permitAll()
+
+                        //fisere din uploads cu fise medicale acces direct blocat
+                        //singura cale valida e endpoint-ul protejat /inscrieri/{id}/fisa-medicala
+                        .requestMatchers("/uploads/**").denyAll()
+
+
+                        // Coordonator Principal si Admin — lista coordonatorilor (necesara la adaugarea unei activitati)
+                        // EXCEPȚIE de poziție: trebuie declarată ÎNAINTE de /utilizatori/** (doar Admin) mai jos,
+                        // fiindcă Spring Security aplică prima regulă care se potrivește
+                                .requestMatchers("/utilizatori/coordonatori/lista").hasAnyAuthority("ROLE_1", "ROLE_2")
+
+                         //necesar pentru salvarea userId după autentificare Google OAuth2
+                        .requestMatchers("/utilizatori/get_id_user").permitAll()
+                        // Doar Admin (ROLE_1) — gestiune utilizatori si gestiune tabere (creare/editare/stergere)
+                                .requestMatchers("/utilizatori/**").hasAuthority("ROLE_1")
+                                .requestMatchers(org.springframework.http.HttpMethod.POST, "/tabere/creare").hasAuthority("ROLE_1")
+                                .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/tabere/stergere/**").hasAuthority("ROLE_1")
+                                .requestMatchers(org.springframework.http.HttpMethod.POST, "/categorii/creare").hasAuthority("ROLE_1")
+                                .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/categorii/stergere/**").hasAuthority("ROLE_1")
+
+                        // Coordonator Principal si Admin — gestionarea globala a inscrierilor (vizualizare toate, confirmare, respingere)
+                                .requestMatchers("/inscrieri/lista", "/inscrieri/toate", "/inscrieri/paginat").hasAnyAuthority("ROLE_1", "ROLE_2")
+                                .requestMatchers("/inscrieri/coordonator/**").hasAnyAuthority("ROLE_1", "ROLE_2")
+                                .requestMatchers(org.springframework.http.HttpMethod.PUT, "/inscrieri/confirma/**", "/inscrieri/respinge/**").hasAnyAuthority("ROLE_1", "ROLE_2")
+                                .requestMatchers("/cazare/**").hasAnyAuthority("ROLE_1", "ROLE_2")
+                                .requestMatchers("/rapoarte/**").hasAnyAuthority("ROLE_1", "ROLE_2")
+                                .requestMatchers("/buget/**").hasAnyAuthority("ROLE_1", "ROLE_2")
+
+                        // Utilizator autentificat (orice rol) — propriile inscrieri: creare, anulare, istoric, plata, fisa medicala
+                        .requestMatchers("/inscrieri/save-completa", "/inscrieri/creare").authenticated()
+                        .requestMatchers("/inscrieri/stergere/**", "/inscrieri/istoric/**").authenticated()
+                        .requestMatchers("/inscrieri/locuri-disponibile/**", "/inscrieri/factura/**", "/inscrieri/upload-document/**").authenticated()
+
+                        // Coordonator si Admin — prezenta, check-in/out, panou medical, comunicare interna
+                        .requestMatchers("/prezenta/**").hasAnyAuthority("ROLE_1", "ROLE_2")
+                        .requestMatchers("/flux/**").hasAnyAuthority("ROLE_1", "ROLE_2")
+                        .requestMatchers("/anunturi-interne/**").hasAnyAuthority("ROLE_1", "ROLE_2")
+                        .requestMatchers("/broadcast/**").hasAnyAuthority("ROLE_1", "ROLE_2")
+                        // Coordonator si Admin — panou medical si rapoarte specifice bucatariei
+                        .requestMatchers("/participanti/medical/**", "/participanti/raport-bucatarie/**").hasAnyAuthority("ROLE_1", "ROLE_2")
+                        .requestMatchers("/participanti/lista", "/participanti/paginat").hasAnyAuthority("ROLE_1", "ROLE_2")
+
+                        // Utilizator autentificat (orice rol) — gestionarea propriilor participanti (familia mea)
+                        .requestMatchers("/participanti/familie/**").authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/participanti").authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/participanti/**").authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/participanti/**").authenticated()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/participanti/{id}").authenticated()
+
+                        .anyRequest().authenticated() // orice alta rută plăți, tabere actualizate, profil-doar autentificare valida
 
 
                 )
@@ -82,10 +135,6 @@ public class SecurityConfig {
                         })
                 );
         return http.build();
-    }
-    @Bean
-    public org.springframework.security.crypto.password.PasswordEncoder passwordEncoder() {
-        return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
     }
 
 }

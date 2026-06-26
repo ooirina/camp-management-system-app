@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Html5QrcodeScanner } from 'html5-qrcode';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const CheckInOutPage = () => {
+    const navigate = useNavigate();
     const [tabere, setTabere] = useState([]);
     const [selectedTabara, setSelectedTabara] = useState(localStorage.getItem('tabaraActivaId') ||'');
     const [participanti, setParticipanti] = useState([]);
@@ -10,6 +13,8 @@ const CheckInOutPage = () => {
 
     //deschide camera
     const [isScanning, setIsScanning] = useState(false);
+    // Blochează procesarea unui nou cod scanat cât timp unul e deja în curs (confirmare sau cerere către server)
+    const scanareInCurs = React.useRef(false);
 
     //userId pentru a filtra taberele coordonatorului
       const userId = localStorage.getItem('userId');
@@ -29,13 +34,28 @@ const CheckInOutPage = () => {
        scanner.render(
            (decodedText)=>{
  // Când a citit codul cu succes
+                     // Dacă o scanare e deja în curs de procesare, ignorăm citirile suplimentare
+                     if (scanareInCurs.current) return;
+                     scanareInCurs.current = true;
+
                      scanner.clear(); // Oprim camera imediat
                      setIsScanning(false);
                      const idScanat = parseInt(decodedText);
 
-                     // Apelăm check-in-ul
-                     handleAction(idScanat, 'checkin', 'Participant scanat cu QR');
-                     alert(`✅ Scanare reușită! Check-in efectuat pentru ID-ul ${idScanat}.`);
+                     // Căutăm înscrierea scanată în lista participanților tabării curent selectate
+                     const inscriereGasita = participanti.find(p => p.id === idScanat);
+
+                     if (!inscriereGasita) {
+                         // Codul QR nu aparține tabării active selectate momentan
+                         toast.error("Acest cod QR este pentru o altă tabără! Selectează tabăra corectă și încearcă din nou.");
+                         scanareInCurs.current = false;
+                         return;
+                     }
+
+                     const numeComplet = `${inscriereGasita.participant.nume} ${inscriereGasita.participant.prenume} cu inscrierea ID: ${idScanat}`;
+
+                     // Apelăm check-in-ul cu numele real al participantului identificat
+                     handleAction(idScanat, 'checkin', numeComplet);
                  },
                  (errorMessage) => {
                      // Aici intră erorile de frame (când nu vede niciun cod), le ignorăm în tăcere
@@ -83,20 +103,31 @@ const CheckInOutPage = () => {
          // Confirmare pentru check-in
              if ( action === 'checkin' && !window.confirm( `Ești sigur(ă) că vrei să marchezi check-in-ul pentru ${participantName}?`)
              ) {
+                 scanareInCurs.current = false;
                  return;
              }
 
         // Dacă e checkout, cerem confirmare
         if (action === 'checkout' && !window.confirm("Confirmi plecarea definitivă a participantului?")) {
+            scanareInCurs.current = false;
             return;
         }
 
         axios.post(`http://localhost:8080/flux/${action}/${id}`)
             .then(() => {
+                // Mesaj clar de confirmare, vizibil utilizatorului
+                if (action === 'checkin') {
+                    toast.success(`Check-in confirmat${participantName ? ' pentru ' + participantName : ''}!`);
+                } else {
+                    toast.success('Check-out confirmat cu succes!');
+                }
                 // După acțiune, reîmprospătăm lista
                 fetchStatusParticipanti(selectedTabara);
             })
-            .catch(err => alert("Eroare la procesare flux."));
+            .catch(err => alert("Eroare la procesare flux."))
+            .finally(() => {
+                scanareInCurs.current = false;
+            });
     };
 
     const filtrati = participanti.filter(p =>
@@ -104,41 +135,11 @@ const CheckInOutPage = () => {
         p.participant.prenume.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-
-const handleDownloadCSV= async()=>{
-
-   if (!selectedTabara) {
-               alert("Te rog selectează o tabără mai întâi!");
-               return;
-           }
-
-  try{
-      const token =localStorage.getItem('token');
-     const response = await axios.get(`http://localhost:8080/flux/raport/csv/${selectedTabara}`, {
-               headers: { Authorization: `Bearer ${token}` },
-                           responseType: 'blob', // inseamna că primim un fișier, nu text
-  });
-
-  const url =window.URL.createObjectURL(new Blob([response.data]));
-  const link= document.createElement('a');
-  link.href=url;
-  link.setAttribute('download', `Lista_Tabara_${selectedTabara}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-
-} catch(error){
-    console.error("Eroare la descărcare:", error);
-    alert("Eroare la generarea Excel-ului.");
-
-}
-};
     return (
         <div className="container mt-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2>🛂 Flux Sosiri / Plecări</h2>
-                <button className="btn btn-outline-secondary" onClick={() => window.history.back()}>
+                <button className="btn btn-outline-secondary" onClick={() => navigate('/cazare')}>
                     ⬅ Înapoi la Cazare
                 </button>
             </div>
@@ -165,12 +166,6 @@ const handleDownloadCSV= async()=>{
                     />
                 </div>
             </div>
-
-              <div className="d-flex justify-content-end mb-2">
-                  <button className="btn btn-outline-success fw-bold" onClick={handleDownloadCSV}>
-                   📊 Descarcă Lista Excel (CSV)
-                   </button>
-              </div>
 
               <button className="btn btn-primary fw-bold mb-3 ms-2" onClick={() => setIsScanning(!isScanning)}>
                   📷 {isScanning ? 'Închide Camera' : 'Scanează QR'}

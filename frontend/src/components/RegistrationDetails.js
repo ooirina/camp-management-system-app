@@ -11,6 +11,25 @@ const RegistrationDetails = () => {
     const [inscriere, setInscriere] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    ///se face cerere axios  interceptorul care ataseaza automat tokenul JWT, fisierul primit e deschis intr-un tab nou ca PDF
+    //cere fișa medicală de la backend (cu tokenul atașat automat de Axios), primește fișierul PDF brut, îl transformă într-un link temporar în browser, și îl deschide într-un tab nou. Dacă serverul respinge cererea (nu ai drept de acces sau fișierul nu există), afișează un mesaj de eroare.
+    // Descarcă fișa medicală printr-o cerere autentificată (Axios atașează automat tokenul JWT),
+    // transformă răspunsul binar (PDF) într-un URL temporar și îl deschide într-un tab nou
+
+
+    const handleVeziFisaMedicala = async () => {
+            try {
+                const res = await axios.get(
+                    `http://localhost:8080/inscrieri/${inscriere.id}/fisa-medicala`,
+                    { responseType: 'blob' }
+                );
+                const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+                window.open(url, '_blank');
+            } catch (err) {
+                toast.error("Nu ai dreptul să accesezi acest document, sau acesta nu există.");
+            }
+        };
+
     useEffect(() => {
         const fetchDetalii = async () => {
             try {
@@ -96,14 +115,13 @@ const RegistrationDetails = () => {
                                 <p className="mb-2 fw-bold text-secondary">Document Medical (Adeverință):</p>
                                 {inscriere.documentMedical ? (
                                     // Aici se foloseste ruta publică din WebConfig pe care am discutat-o
-                                    <a
-                                        href={`http://localhost:8080/uploads/${inscriere.documentMedical}`}
-                                        target="_blank"
-                                        rel="noreferrer"
+                                     // Acces protejat — cerere Axios cu token JWT atașat automat de interceptor
+                                       <button
+                                        onClick={handleVeziFisaMedicala}
                                         className="btn btn-primary shadow-sm"
-                                    >
+                                         >
                                         ⬇️ Vezi / Descarcă Fișa
-                                    </a>
+                                    </button>
                                 ) : (
                                     <span className="text-danger fw-bold border p-2 rounded">❌ Părintele nu a încărcat fișa!</span>
                                 )}

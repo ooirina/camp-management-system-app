@@ -11,7 +11,7 @@ const ActivityForm = () => {
 
     const [activitate, setActivitate] = useState({
         nume: '', data: '', descriere: '', oraInceput: '', oraSfarsit: '',
-        locatie: '', capacitateMaxima: '', idTabara: '', idCoordonator: userId || ''
+        locatie: '', capacitateMaxima: '', idTabara: '', idCoordonator: ''
     });
 
     const [tabere, setTabere] = useState([]);
@@ -57,7 +57,20 @@ const ActivityForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:8080/activitati', activitate, config);
+            // Transformăm datele din formular în formatul așteptat de entitatea Activitate:
+            // tabara și coordonator trebuie trimise ca obiecte cu id, nu ca id-uri simple
+            const dataToSend = {
+                nume: activitate.nume,
+                data: activitate.data,
+                descriere: activitate.descriere,
+                oraInceput: activitate.oraInceput,
+                oraSfarsit: activitate.oraSfarsit,
+                locatie: activitate.locatie,
+                capacitateMax: activitate.capacitateMaxima,
+                tabara: { id: activitate.idTabara },
+                coordonator: { id: activitate.idCoordonator }
+            };
+            await axios.post('http://localhost:8080/activitati/creare', dataToSend, config);
             alert("Activitate salvată cu succes!");
             navigate('/activitati');
         } catch (err) {

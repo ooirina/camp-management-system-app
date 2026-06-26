@@ -14,4 +14,8 @@ public interface TabaraRepository extends JpaRepository<Tabara,Long> {
     List<Tabara> findTabereByCoordonator(@Param("idCoordonator") Long idCoordonator);
 
     List<Tabara> findByIdCoordonatorPrincipal(Long idCoordonatorPrincipal);
+
+//verifica daca exista vreo tabara care foloseste o anumita categorie- folosit la stergerea categoriei
+    @Query("SELECT COUNT(t)> 0 FROM Tabara t JOIN t.categorii c WHERE c.id=:idCategorie")
+    boolean existaTabaraCuCategoria(@Param("idCategorie") Long idCategorie);
 }

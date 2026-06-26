@@ -18,7 +18,11 @@ const AccommodationPage = () => {
   const userRole = localStorage.getItem('userRole');
 
     useEffect(() => {
-        axios.get('http://localhost:8080/tabere/lista')
+        // Adminul vede toate taberele; coordonatorul vede doar cele unde e PRINCIPAL
+        const urlTabere = userRole === '1'
+            ? 'http://localhost:8080/tabere/lista'
+            : `http://localhost:8080/tabere/coordonator-principal/${userId}`;
+        axios.get(urlTabere)
              .then(res => setTabere(res.data));
         // Aducere automat camerele și participanții dacă tabăra e pre-selectată
          const tabaraSalvata = localStorage.getItem('tabaraActivaId');
