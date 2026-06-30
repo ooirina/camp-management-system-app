@@ -19,10 +19,12 @@ public interface InscriereRepository extends JpaRepository<Inscriere,Long> {
     List<InscriereDetaliiDTO> findDetailedInscrieri(@Param("idPlatitor") Long idPlatitor);
     List<Inscriere> findByTabaraIdAndCameraIsNull(Long idTabara);
     List<Inscriere> findByTabaraId(Long idTabara);
-    // Numără doar înscrierile active (exclude ANULAT și WAITLIST), ca anularea să elibereze efectiv locul
+
+    // Numără doar înscrierile active (exclude ANULAT și WAITLIST)
     @Query("SELECT COUNT(i) FROM Inscriere i WHERE i.tabara.id = :tabaraId AND i.statut NOT IN ('ANULAT', 'WAITLIST')")
     long countByTabaraId(@Param("tabaraId") Long tabaraId);
-    //metoda care filtreaza inscrierile dupa status si status plata
+
+    //metoda care filtreaza inscrierile dupa statut si status plata
     List<Inscriere> findByTabaraIdAndStatutAndStatusPlata(Long idTabara, String statut, String statusPlata);
 
     @Query(value = "SELECT DISTINCT u.email FROM inscriere i " +

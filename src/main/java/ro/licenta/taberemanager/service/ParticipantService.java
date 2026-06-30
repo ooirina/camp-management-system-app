@@ -17,7 +17,7 @@ public class ParticipantService {
     @Autowired
     private ParticipantRepository repository;
 
-    // Lista cu toti participantii
+
     public List<Participant> findAll() {
         return repository.findAll();
     }
@@ -27,18 +27,18 @@ public class ParticipantService {
         return repository.findByTabaraId(idTabara);
     }
 
-    // Cautare participant dupa id
+
     public Participant findById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Participantul nu a fost gasit"));
     }
 
-    // PAginare participanti
+   /* // PAginare participanti
     public Page<Participant> findAllPaged(Pageable pageable) {
         return repository.findAll(pageable);
     }
-
-    // Aducere lista de membrii ai familiei( copii) pentru un anumit user(parinte)
+*/
+    // Aducere lista de membrii ai familiei pentru un anumit user(parinte)
     public List<Participant> findByIdUser(Long idUser) {
         return repository.findByIdUser(idUser);
     }
@@ -53,13 +53,13 @@ public class ParticipantService {
         return repository.findParticipantiMedicalByCoordonatorAndTabara(idCoordonator, idTabara);
     }
 
-    // metoda care face agregare(o grupare si numarare)
+    //Logica de raport meniu-  metoda care face agregare(o grupare si numarare)
     public Map<String, Long> getRaportBucatarie(Long idTabara) {
         List<Participant> participanti = repository.findByTabaraIdReadyForKitchen(idTabara);
-        // se aduna numarul total
+
         long total = participanti.size();
 
-        // agregam alergiile(grupare dupa detalii_medicale) — excludem doar valorile goale/lipsă, nu un text literal "Fără"
+        // agregam alergiile(grupare dupa detalii_medicale)
         Map<String, Long> raport = participanti.stream()
                 .filter(p -> p.getAlergii() != null && !p.getAlergii().isBlank())
                 .collect(Collectors.groupingBy(Participant::getAlergii, Collectors.counting()));
@@ -67,7 +67,7 @@ public class ParticipantService {
         return raport;
     }
 
-    // Se adauga un participant respectand regulile de validare
+
     public Participant salveazaParticipant(Participant participant) {
         return repository.save(participant);
     }

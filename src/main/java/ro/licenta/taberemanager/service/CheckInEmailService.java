@@ -30,21 +30,17 @@ public class CheckInEmailService {
 
          Participant participant =inscriere.getParticipant();
 
-         ///  Calculam varsta participantului pe baza datei de nastere
-
          int varsta =Period.between(participant.getDataNasterii(), LocalDate.now()).getYears();
 
-         //daca participantul are sub 18 ani, trimitem emailul catre platitor care e de fapt parintele
          if(varsta <18)
          {
-             /// extragere datele utilizatorului(parintele) folosind idPlatitor
            User platitor =userRepository.findById(inscriere.getIdPlatitor())
                    .orElseThrow(()-> new RuntimeException("Utilizatorul plătitor nu a fost găsit!"));
 
            String emailParinte = platitor.getEmail();
            String numeCompletCopil = participant.getNume()+ " " +participant.getPrenume();
 
-          /// Construire mesaj
+
          String subiect ="Confirmare Check-in: "+ numeCompletCopil+ " a ajuns cu bine!";
          String mesaj ="Salutare,\n\n"
                  + "Te anunțăm cu bucurie că " + numeCompletCopil + " a făcut check-in-ul cu succes și a fost preluat de coordonatorii noștri.\n\n"
@@ -52,7 +48,7 @@ public class CheckInEmailService {
                  + "Distracție plăcută și toate cele bune,\n"
                  + "Echipa CampCore";
 
-         //Trimitere email
+
              emailService.sendSimpleEmail(emailParinte, subiect, mesaj);
          }
 

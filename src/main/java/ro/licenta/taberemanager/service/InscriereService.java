@@ -22,7 +22,6 @@ public class InscriereService {
 
     private final InscriereRepository inscriereRepository;
     private final TabaraRepository tabaraRepository;
-    // UserRepository și ParticipantRepository înlocuite cu serviciile lor
     private final UserServiceInterface userService;
     private final ParticipantService participantService;
     private final BugetService bugetService;
@@ -30,7 +29,6 @@ public class InscriereService {
     @Transactional
     public Inscriere creeazaInscriereCompleta(InscriereDTO dto) {
 
-        // 1. Verificare tabără și locuri disponibile
         Tabara tabara = tabaraRepository.findById(dto.getIdTabara())
                 .orElseThrow(() -> new RuntimeException("Tabara nu exista"));
 
@@ -38,31 +36,29 @@ public class InscriereService {
         String statusInscriere = "PENDING"; //status default
 
         if (tabara.getCapacitate().longValue() - inscrieriCurente <= 0) {
-            //daca s-au atins locurile maxime, nu se da eroare, ci il pune pe participant la waitlist
+
             statusInscriere = "WAITLIST";
-            System.out.println("Tabăra este plină. Participantul va fi pus pe WAITLIST.");
+         //   System.out.println("Tabăra este plină. Participantul va fi pus pe WAITLIST.");
         }
 
-        // 2. Găsire user după email
-        //cautare user in bd dupa email de google pt a il lega de participant
+       //cautare user
         User user = userService.findUserByEmail(dto.getEmailUtilizator());
         if (user == null) {
             throw new RuntimeException("Userul nu a fost găsit");
         }
 
-        // 3. Participant existent sau nou
+        //particiant
         Participant p;
-        // Verificăm dacă React ne-a trimis un ID de participant existent (din dropdown)
+
         if (dto.getIdParticipant() != null) {
-            // Îl extragem din baza de date prin ParticipantService
+
             p = participantService.findById(dto.getIdParticipant());
         } else {
-            // Doar dacă nu avem ID, creăm unul nou
+
             p = new Participant();
         }
 
-        // Actualizăm sau setăm datele (în caz că părintele a schimbat un număr de telefon în formular)
-        //salveaza mai întâi participantul-toate datele
+       //salveaza participantul-toate datele
         p.setNume(dto.getNumeParticipant());
         p.setPrenume(dto.getPrenumeParticipant());
         p.setDataNasterii(dto.getDataNasterii());
@@ -73,11 +69,11 @@ public class InscriereService {
         p.setContactUrgenta(dto.getContactUrgenta());
         p.setIdUser(user.getId());
 
-        //salvare :daca e nou , i se da un id nou, dar daca exista, doar face UPDATE la date
+        //id nou/ actualizare date
         Participant participantSalvat = participantService.salveazaParticipant(p);
 
-        // 4. Creare înscriere
-        /// dupa ce a salvat participantul:2. Creăm înscrierea automată(legare participant de tabara)
+        // Creare înscriere
+
         Inscriere inscriere = new Inscriere();
         inscriere.setDataInscriere(LocalDate.now());
         inscriere.setStatut(statusInscriere);
@@ -85,20 +81,20 @@ public class InscriereService {
         inscriere.setDataPlata(LocalDate.now());
         inscriere.setStatusPlata("NEPLATIT");
         inscriere.setStatusSosire("NESOSIT");
-        inscriere.setTabara(tabara); //se da obiectul intreg , nu foar id ul
-        inscriere.setParticipant(participantSalvat); //id generat automat mai sus
+        inscriere.setTabara(tabara);
+        inscriere.setParticipant(participantSalvat);
         inscriere.setIdPlatitor(user.getId());
 
-        // Folosește saveAndFlush în loc de save mai mult pt salvare fortata
+
         return inscriereRepository.saveAndFlush(inscriere);
     }
 
-    //sergere cu integrare referentiala
-    //nu se poate anula adca ziua curenta e in perioada taberei
+    //stergere cu integrare referentiala
+    //nu se poate anula daca ziua curenta e in perioada taberei
     public void sterge(Long id) {
         inscriereRepository.findById(id).ifPresent(inscriere -> {
 
-            // Verificare perioadă tabară
+
             LocalDate azi = LocalDate.now();
             LocalDate dataInceput = inscriere.getTabara().getDataInceput();
             LocalDate dataSfarsit = inscriere.getTabara().getDataSfarsit();
@@ -123,11 +119,8 @@ public class InscriereService {
         });
     }
 
-    /*
-     Job programat  adica o auto-anulare inscrieri PENDING neplatite de mai mult de 3 zile.
-     nu se aplica inscrierilor WAITLIST, acestea nu au termen de expirare  (raman in coada de asteptare pana cand coordonatorul promoveaza manual cererea).
-      Ruleaza o data pe zi, la ora 03:00.
-     */
+
+    //anulare automata
     @Scheduled(cron = "0 0 3 * * *")
     @Transactional
     public void anuleazaAutomatInscrierileNeplatite() {

@@ -1,9 +1,9 @@
 import React from 'react';
-// 1. Importăm rutarea (necesară pentru a naviga între pagini)
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 import axios from 'axios';
-// 2. Importăm noua ta componentă creată separat
+
 import CampList from './components/CampList';
 import ActivityList from './components/ActivityList';
 import UserList from './components/UserList';
@@ -84,11 +84,11 @@ axios.interceptors.response.use(
       if (localStorage.getItem('userEmail') || localStorage.getItem('token')) {
         alert(" Sesiunea a expirat din motive de securitate. Te rugăm să te conectezi din nou!");
         localStorage.clear();
-        //mutare user pe pagina de login
+
         window.location.href = '/login';
       }
     }
-    //returneaza eroare mai departe ca sa o vada si restul aplicatiei daca e nevoie
+
     return Promise.reject(error);
   }
 );
@@ -113,7 +113,7 @@ const UserRoute = ({ children }) => {
     const token    = localStorage.getItem('token');
     const userRole = localStorage.getItem('userRole');
     if (!token) return <Navigate to="/login" />;
-    if (userRole !== '5') return <Navigate to="/admin/la dashboard" />;
+    if (userRole !== '5') return <Navigate to="/admin-dashboard" />;
     return children;
 };
 
@@ -139,8 +139,6 @@ const PrincipalRoute = ({ children }) => {
 };
 
 function App() {
-  //  Am șters useEffect și axios de aici!
-  // Acum datele sunt gestionate în interiorul lui CampList.js
 
  const isAuthenticated = localStorage.getItem('token');
   return (
@@ -148,12 +146,11 @@ function App() {
     <Navbar />
     <ToastContainer position="top-right" autoClose={3000} />
       <div className="container mt-5">
-        {/* Putem pune aici un Navbar sau un titlu care să apară pe toate paginile */}
+
         <h1 className="text-center mb-4">Sistem Gestiune Tabere</h1>
 
         <Routes>
         {/* Dacă ești logat, mergi la Dashboard(user). Dacă nu, mergi la Login */}
-       //<Route path="/" element ={isAuthenticated ?<Navigate to="/dashboard" /> : <Navigate to ="/login" />}/>
                 {/* Publice */}
                     <Route path="/"              element={<Navigate to="/dashboard" />} />
                     <Route path="/dashboard"     element={<Dashboard />} />
@@ -220,33 +217,3 @@ export default App;
 
 
 
-
-
-
-
-/*import logo from './logo.svg';
-import './App.css';
-
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
-
-export default App;
-*/

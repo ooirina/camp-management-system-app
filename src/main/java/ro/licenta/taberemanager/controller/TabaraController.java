@@ -102,17 +102,14 @@ public class TabaraController {
         Tabara tabara = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tabara nu a fost gasita"));
 
-        // Verificare înscrieri — nu se poate sterge daca are participanti inscrisi
+        // Verificare înscrieri nu se poate sterge daca are participanti inscrisi
         long nrInscrieri = inscriereRepository.countByTabaraId(id);
         if (nrInscrieri > 0) {
             return ResponseEntity.badRequest()
                     .body("Nu poți șterge tabăra! Are " + nrInscrieri + " înscrieri legate de ea.");
         }
 
-        // Verificare activități cu prezențe înregistrate
-        boolean areActivitatiCuPrezente = activitateRepository.findByTabaraIdOrderByDataAsc(id)
-                .stream()
-                .anyMatch(a -> a.getId() != null);
+
         // Dacă are activități, nu se poate șterge
         long nrActivitati = activitateRepository.findByTabaraIdOrderByDataAsc(id).size();
         if (nrActivitati > 0) {
@@ -126,7 +123,7 @@ public class TabaraController {
                     .body("Nu poți șterge tabăra! Are un coordonator principal asignat.");
         }
 
-        // Stergere trasee legate (trasee sunt @Transient în model — stocate separat)
+        // Stergere trasee legate
         traseuRepository.findAll().stream()
                 .filter(t -> t.getTabara() != null && id.equals(t.getTabara().getId()))
                 .forEach(t -> traseuRepository.deleteById(t.getId()));

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class ParticipantController {
 
-    // Totul prin ParticipantService
+
     private final ParticipantService service;
     private final InscriereRepository inscriereRepository;
 
@@ -30,13 +30,12 @@ public class ParticipantController {
         this.inscriereRepository = inscriereRepository;
     }
 
-    // Lista cu toti participantii
     @GetMapping("/lista")
     public List<Participant> showParticipants() {
         return service.findAll();
     }
 
-    // Lista participanților unei singure tabere — folosit de coordonator (vede doar tabăra lui activă)
+    // Lista participanților unei singure tabere, folosit de coordonator (vede doar tabăra lui activă)
     @GetMapping("/lista/tabara/{idTabara}")
     public List<Participant> showParticipantsByTabara(@PathVariable Long idTabara) {
         return service.findByTabaraId(idTabara);
@@ -70,14 +69,7 @@ public class ParticipantController {
         return service.findById(id);
     }
 
-    // PAginare participanti
-    @GetMapping("/paginat")
-    @ResponseBody
-    public Page<Participant> getParticipants(Pageable pageable) {
-        return service.findAllPaged(pageable);
-    }
 
-    // Se adauga un participant respectand regulile de validare
     @PostMapping
     @ResponseBody
     public Participant createParticipant(@Valid @RequestBody Participant participant) {
@@ -90,7 +82,7 @@ public class ParticipantController {
         return service.findByIdUser(idUser);
     }
 
-    // Actualizare date participant
+
     @PutMapping("/{id}")
     @ResponseBody
     public Participant updateParticipant(@PathVariable Long id,
@@ -103,8 +95,7 @@ public class ParticipantController {
     @ResponseBody
     public ResponseEntity<String> deleteParticipant(@PathVariable Long id) {
 
-        // Verificare daca participantul are inscrieri active
-        // Nu se poate sterge daca e inscris, a platit sau e in waitlist
+        // Verificare daca participantul are inscrieri active(a platit sau e in waitlist)
         boolean areInscrieri = inscriereRepository.findAll().stream()
                 .anyMatch(i -> i.getParticipant() != null &&
                         id.equals(i.getParticipant().getId()) &&

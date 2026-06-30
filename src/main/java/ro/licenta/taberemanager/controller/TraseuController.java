@@ -65,8 +65,7 @@ public class TraseuController {
         Traseu traseu = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Traseul nu a fost gasit."));
 
-        // Verificare integritate referențială: dacă tabăra traseului are înscrieri active
-        // (exclude ANULAT/WAITLIST), nu permitem ștergerea traseului
+        // Verificare integritate referențială: dacă tabăra traseului are înscrieri active (exclude ANULAT/WAITLIST)
         if (traseu.getTabara() != null) {
             long inscrieriActive = inscriereRepository.countByTabaraId(traseu.getTabara().getId());
             if (inscrieriActive > 0) {

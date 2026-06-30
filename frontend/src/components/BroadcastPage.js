@@ -8,26 +8,25 @@ const BroadcastPage=()=> {
      const quillRef=useRef(null);
      const editorRef= useRef(null);
 
-   //setari pentru formulare
+
    const [tabere, setTabere] = useState([]);
        const [selectedTabara, setSelectedTabara] = useState(localStorage.getItem('tabaraActivaId') || '');
        const [broadcastSubiect, setBroadcastSubiect] = useState('');
        const [broadcastMesaj, setBroadcastMesaj] = useState('');
        const [isSendingMail, setIsSendingMail] = useState(false);
 
-     ///cand se deschide pagina, se ia lista din bd
+
        useEffect(()=>{
-         // 1. Luăm direct ID-ul coordonatorului din localStorage
+
                  const userId = localStorage.getItem('userId');
 
                  const fetchTabereCoordonator = async () => {
                      if (!userId) return;
 
                      try {
-                         // 2. Apelăm ruta ta directă din TabaraController!
+
                          const response = await axios.get(`http://localhost:8080/tabere/coordonator/${userId}`);
 
-                         // 3. Punem direct taberele în state, fără filtrări complicate
                          setTabere(response.data);
 
                      } catch (error) {
@@ -49,17 +48,16 @@ const BroadcastPage=()=> {
                   }
 
               });
-            ///Actualizare stare boradcastMesaj cand se scrie ceva
+
             editorRef.current.on('text-change', ()=>{
                 setBroadcastMesaj(editorRef.current.root.innerHTML);
 
             });
           }
-          //functia ce preia taberele
+
               fetchTabereCoordonator();
 
-       },[]);///array gol asigura ca ruleaza o singura data la montare
-
+       },[]);
 
        const handleSendBroadcast =async(e) =>{
            e.preventDefault();

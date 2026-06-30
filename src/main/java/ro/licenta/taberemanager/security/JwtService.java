@@ -22,7 +22,7 @@ public class JwtService {
                 .compact();
     }
 
-    // 2. Extragem Email-ul din Token (Cine e posesorul?)
+    // se extrage Email-ul din Token (Cine e posesorul?)
     public String extractEmail(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -32,7 +32,7 @@ public class JwtService {
         return claims.getSubject();
     }
 
-    // 3. Verificăm dacă Token-ul e valid (E expirat? E pentru user-ul corect?)
+    // verificare  dacă Token-ul e valid (E expirat? E pentru user-ul corect?)
     public boolean isTokenValid(String token, UserDetails userDetails) {
         String email = extractEmail(token);
         return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
@@ -47,7 +47,7 @@ public class JwtService {
         return claims.getExpiration().before(new Date());
     }
 
-    // 4. Metoda care "fabrică" cheia de securitate din constantă
+    // 4. Metoda care realizeaza cheia de securitate din constantă
     private Key getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(JwtConstant.SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
@@ -57,20 +57,4 @@ public class JwtService {
 }
 
 
-/*
-public String extractEmail(String token){
-    return extractClaim(token, Claims::getSubject);
-}
-//citire date din interiorul jwt ului
-    public <T> T extractClaim(String token, Function<Claims,T> claimsResolver){
-    final Claims claims=extractAllClaims(token);
-    return claimsResolver.apply(claims);
-    }
 
-    private Claims extractAllClaims(String token){
-    return Jwts.parserBuilder()
-            .setSigningKey(getSigningKey())//cheie secreta
-            .build()
-            .parseClaimsJws(token)
-            .getBody();
-}*/

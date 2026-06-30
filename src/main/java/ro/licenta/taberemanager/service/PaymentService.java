@@ -33,7 +33,7 @@ public class PaymentService {
     @Value("${stripe.api.key}")
     private String stripeApiKey;
 
-    // Metoda aceasta ruleaza automat la pornitrea serverului si configureaza Stripe
+    // Metoda automata la pornitrea serverului si configureaza Stripe
     @PostConstruct
     public void init() {
         Stripe.apiKey = stripeApiKey;
@@ -42,12 +42,11 @@ public class PaymentService {
     // Creare sesiune Stripe Checkout
     public Map<String, String> createCheckoutSession(Long idInscriere) {
         try {
-            // Se gaseste inscriere in bd
+
             Inscriere inscriere = inscriereRepository.findById(idInscriere)
                     .orElseThrow(() -> new RuntimeException("Înscrierea nu a fost găsită"));
 
-            // Stripe lucreza cu banii in format "centi"(sau bani pentru RON)
-            // ex: 2500RON trebuie trimis ca 250000
+            // Stripe lucreza cu banii in format "centi"
             long sumaInBani = inscriere.getSuma().longValue() * 100L;
 
             // Configurare sesiune de plata

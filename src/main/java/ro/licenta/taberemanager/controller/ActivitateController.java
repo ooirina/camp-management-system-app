@@ -94,13 +94,13 @@ public class ActivitateController {
         return ResponseEntity.ok("Activitatea a fost ștearsă cu succes.");
     }
 
-    /// metoda pentru itinerariu tabara
+    // metoda pentru itinerariu tabara
     @GetMapping("/tabara/{idTabara}")
     public List<Activitate> getItinerary(@PathVariable Long idTabara) {
         return repository.findByTabaraIdOrderByDataAsc(idTabara);
     }
 
-    // Folosit in UserDetails pentru a afisa activitatile coordonatorului
+
     @GetMapping("/coordonator/{idCoordonator}")
     public List<Activitate> getActivitatiCoordonator(@PathVariable Long idCoordonator) {
         return repository.findByCoordonatorId(idCoordonator);

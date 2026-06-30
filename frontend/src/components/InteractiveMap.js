@@ -8,7 +8,7 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
-// Fix pentru iconițele Leaflet care dispar în React
+// iconițele Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: markerIcon2x,
@@ -24,7 +24,7 @@ const InteractiveMap = ({ camps, onLocationSelect }) => {
             const [lat, lng] = pair.split(',');
             if (!lat || !lng) return null;
             return [parseFloat(lat), parseFloat(lng)];
-        }).filter(p => p !== null); // prevenire ca harta sa nu dea crash
+        }).filter(p => p !== null);
     };
 
     // ne asiguram ca camps este un array inainte de mapare
@@ -32,7 +32,7 @@ const InteractiveMap = ({ camps, onLocationSelect }) => {
 
     return (
         <div style={{ position: 'relative' }}>
-            {/* Legendă plutitoare pe hartă */}
+            {/* LEGENDA*/}
             <div style={{
                 position: 'absolute',
                 top: '10px',
@@ -65,7 +65,7 @@ const InteractiveMap = ({ camps, onLocationSelect }) => {
 
                 {safeCamps.map((camp) => (
                     <React.Fragment key={camp.id}>
-                        {/* Pin pentru locatiile taberelor - Folosim parseFloat pentru siguranta */}
+                        {/* Pin pentru locatiile taberelor*/}
                         <Marker
                             position={[parseFloat(camp.latitudine), parseFloat(camp.longitudine)]}
                             eventHandlers={{ click: () => onLocationSelect(camp.locatie) }}

@@ -24,7 +24,7 @@ public class UserService  implements UserServiceInterface {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Cerut de Spring Security — încarcă userul după email pentru validarea JWT-ului
+    // încarcă userul după email pentru validarea JWT-ului
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
@@ -53,7 +53,7 @@ public class UserService  implements UserServiceInterface {
     @Override
     public User findUserProfileByJwt(String jwt) {//extragere email din token folosind serviciul de JWT
         String email = jwtService.extractEmail(jwt);
-        //cautare utilizator in baza de date
+
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilizatorul nu a fost gasit pentru acest token."));
 
@@ -61,11 +61,10 @@ public class UserService  implements UserServiceInterface {
 
     @Override
     public User saveUser(User user) {
-        // Aici Spring Data JPA face toată magia în spate
+
         return userRepository.save(user);
     }
 
-    // Adăugat pentru a fi folosit din UserController (stergere)
     @Override
     public void deleteUser(Long id) {
         userRepository.deleteById(id);

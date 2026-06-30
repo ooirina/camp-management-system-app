@@ -25,12 +25,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 1. Luăm Header-ul "Authorization"
+        // se ia header-ul "Authorization"
         String authHeader = request.getHeader("Authorization");
         String jwt = null;
         String userEmail = null;
 
-        // 2. Verificăm dacă începe cu "Bearer "
+        // se verifia dacă începe cu "Bearer "
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
 
@@ -38,16 +38,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 userEmail = jwtService.extractEmail(jwt);//verifica daca tokenul e expirat sau modificat manual
             }catch (Exception e) {
                 System.out.println("Token expirat sau invalid:" +e.getMessage());
-                // Logăm eroarea în consolă ca să știm ce s-a întâmplat, dar nu blocăm cererea
-                // userEmail rămâne null, deci codul de mai jos (Pasul 3) va fi sărit automat
-            }
+                  }
 
         }
-        // 3. Dacă avem email și user-ul nu e deja logat în sistem
+        // daca e email și user-ul nu e deja logat în sistem
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userServiceInterface.loadUserByUsername(userEmail);
 
-            // 4. Validăm token-ul
+            // validare token-ul
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
@@ -58,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // 6. Trimitem cererea mai departe către restul aplicației(chiar daca tokenul a fost bun , expirat sau lipseste trebuie lasata cerea sa treaca msai departe
+        // Trimite cererea mai departe către restul aplicației(chiar daca tokenul a fost bun , expirat sau lipseste trebuie lasata cerea sa treaca msai departe
         filterChain.doFilter(request, response);
     }
 

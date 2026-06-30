@@ -17,7 +17,7 @@ public class MapService {
 
     @Autowired
     private TraseuRepository traseuRepository;
-
+    //tabere+ trasee
     public List<Tabara> getAllCampsWithTrails(){
         List<Tabara> tabere=tabaraRepository.findAll();
         for(Tabara t: tabere){

@@ -35,7 +35,7 @@ public class Participant {
     @Column(name="id_user")
     private Long idUser;
 
-  //  private String numeGrup;
+
   @Column(nullable = false, length = 1)
   private String gen; // 'M' sau 'F'
 

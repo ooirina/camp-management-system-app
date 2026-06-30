@@ -23,8 +23,8 @@ public class RapoarteService {
     @Autowired
     private TabaraRepository tabaraRepository;
 
-    // ─── Metodă internă: aduce toate înscrierile unui coordonator (+ filtru tabăra) ──
-    // Acest raport este rezervat Coordonatorului Principal — vede doar taberele proprii
+    //  aduce toate înscrierile unui coordonator (+ filtru tabăra) ─
+    // Acest raport este rezervat Coordonatorului Principal vede doar taberele proprii
     private List<Inscriere> getInscrieri(Long idCoordonator, Long idTabara) {
         if (idTabara != null) {
             return inscriereRepository.findByTabara_IdCoordonatorPrincipalAndTabara_Id(idCoordonator, idTabara);
@@ -32,7 +32,7 @@ public class RapoarteService {
         return inscriereRepository.findByTabara_IdCoordonatorPrincipal(idCoordonator);
     }
 
-    // ─── Metodă internă: mapare Inscriere → DTO complet ─────────────────────
+
     private RaportRowDTO toDTO(Inscriere ins) {
         Participant p = ins.getParticipant();
 
@@ -66,11 +66,10 @@ public class RapoarteService {
                 .build();
     }
 
-    // ─── Raport Înscrieri ─────────────────────────────────────────────────────
+    // Raport Înscrieri
     public List<RaportRowDTO> getRaportInscrieri(Long idCoordonator, Long idTabara) {
-        // Verificare acces: daca s-a cerut o tabara specifica, coordonatorul trebuie
-        // sa fie coordonator principal al ACELEI tabere. Daca idTabara e null
-        // (filtrul "Toate taberele"), verificam doar ca are cel putin o tabara asignata.
+        // Verificare acces: daca s-a cerut o tabara specifica, coordonatorul trebuie si princioal pe acea tabara
+
         List<Tabara> tabereProprii = tabaraRepository.findByIdCoordonatorPrincipal(idCoordonator);
 
         if (idTabara != null) {

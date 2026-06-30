@@ -4,21 +4,21 @@ import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
 const InternalAnnouncementsPage=()=>{
-    //starile componentei
+
     const[announcements, setAnnouncements] = useState([]);
     const[newMessage, setNewMessage] =useState('');
     const[isMainCoordinator, setIsMainCoordinator] =useState(false);
     const [loading, setLoading] =useState(true);
     const [activeCampName, setActiveCampName]= useState('');
 
-    //Datele din contextul global(localStorage)
+
     const activeCampId = localStorage.getItem('tabaraActivaId');
     const currentUserId= localStorage.getItem('userId');
     const currentUserEmail =localStorage.getItem('userEmail');
 
 
     useEffect(()=>{
-       //daca nu are o tabara selectata, oprim incarcarea
+
         if(!activeCampId){
            setLoading(false);
            return;
@@ -26,25 +26,24 @@ const InternalAnnouncementsPage=()=>{
 
         const fetchData =async()=>{
            try{
-               //Aducere tabere ca sa se verifice daca el e coordonatorul sef pe tabara curenta
+
                const campResponse =await axios.get('http://localhost:8080/tabere/lista');
                const currentCamp =campResponse.data.find(camp=>camp.id.toString() === activeCampId.toString());
 
                if(currentCamp){
                    setActiveCampName(currentCamp.nume);
-                   //se verifica daca ID-ul este la fel cu ID ul coordonatorul sef de tabara
+
                    if(currentCamp.idCoordonatorPrincipal?.toString() === currentUserId?.toString()){
                          setIsMainCoordinator(true);
 
                    }
 
                }
-               //Se aduce lista de mesaje pentru aceasta tabara din backend
+
                const announcementsResponse= await axios.get(`http://localhost:8080/anunturi-interne/tabara/${activeCampId}`);
                setAnnouncements(announcementsResponse.data);
 
-               //---Logica pentru Bulina Rosie---
-               //1daca exista mesaje, salvam data celui mai nou mesaj ca fiind" citit"
+               //Logica pentru Bulina Rosie
                if(announcementsResponse.data.length>0){
                const latestId = announcementsResponse.data[0].id;
                 localStorage.setItem('lastSeenAnnouncementId', latestId.toString());
@@ -68,7 +67,7 @@ const InternalAnnouncementsPage=()=>{
          if (!newMessage.trim())
          return;
 
-      //creare obiect pentru backend(exact ca in entitatea Java)
+
       const payload={
           idTabara: parseInt(activeCampId),
           mesaj:newMessage,
@@ -92,14 +91,13 @@ const InternalAnnouncementsPage=()=>{
         }
       };
 
-      //functie utilitara pentru a formata data calendaristica frumos
+
       const formatDate=(dateString)=>{
          if(!dateString)
             return '';
             const options={day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' };
             return new Date(dateString).toLocaleDateString('ro-RO', options);
       };
-     // Dacă utilizatorul nu a intrat mai întâi pe profil să își aleagă tabăra:
          if (!activeCampId) {
              return (
                  <div className="container mt-5 text-center">
@@ -123,7 +121,7 @@ return (
                 </p>
             </div>
 
-            {/* ZONA DE POSTARE (Apare DOAR dacă este șeful taberei) */}
+            {/* ZONA DE POSTARE (Apare DOAR dacă este coordonator principal al taberei) */}
             {isMainCoordinator && (
                 <div className="card shadow-sm border-success mb-5">
                     <div className="card-header bg-success text-white py-3">

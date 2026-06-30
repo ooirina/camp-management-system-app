@@ -19,7 +19,6 @@ public class BroadcastService {
     @Autowired
     private InscriereRepository inscriereRepository;
 
-    //Trimite email broadcast către toți părinții cu taxe plătite dintr-o tabără.
 
     public Map<String, String> trimiteEmailBroadcast(Long idTabara, String subject, String messageText) {
 
@@ -31,19 +30,19 @@ public class BroadcastService {
         }
 
         try {
-            //initialzare container pentru email-uri complexe(html)
+
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
 
-            //setare detalii folosind helper
+
             helper.setSubject(subject);
             helper.setFrom("campcore.app@gmail.com");
-            helper.setText(messageText, true); // Acel 'true' îi spune Java-ului că textul este de fapt cod HTML!
+            helper.setText(messageText, true);
 
             String[] bccArray = parentEmails.toArray(new String[0]);
             helper.setBcc(bccArray);
 
-            //trimitere obiect
+
             mailSender.send(mimeMessage);
 
             return Map.of("status", "success",

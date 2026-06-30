@@ -7,8 +7,7 @@ function ComparePage(){
    const [tabere, setTabere] = useState([]);
    const [loading, setLoading] = useState(false);
 
-//La incarcarea paginii, se citeste taberele din memoria browserului
-  // La incarcarea paginii, aducem taberele si activitatile lor
+
      useEffect(() => {
          const incarcaTabereComplete = async () => {
              const dateSalvate = localStorage.getItem('tabereComparare');
@@ -22,26 +21,20 @@ function ComparePage(){
                  const tabereSalvate = JSON.parse(dateSalvate);
                  const ids = tabereSalvate.map(tabara => tabara.id);
 
-                 // Facem cereri combinate pentru FIECARE ID în parte
                  const cereriCombinate = ids.map(async (id) => {
-                     // Așteptăm simultan detaliile taberei ȘI activitățile ei
                      const [raspunsTabara, raspunsActivitati] = await Promise.all([
                          axios.get(`http://localhost:8080/tabere/${id}`),
                          axios.get(`http://localhost:8080/activitati/tabara/${id}`)
                      ]);
 
-                     // Luăm obiectul taberei
+
                      const tabaraCompleta = raspunsTabara.data;
-                     // Îi "lipim" manual lista de activități primită de pe cealaltă rută
                      tabaraCompleta.activitati = raspunsActivitati.data;
 
                      return tabaraCompleta;
                  });
 
-                 // Așteptăm să se construiască toate taberele cu tot cu activități
                  const tabereFinale = await Promise.all(cereriCombinate);
-
-                 // Punem datele finale în pagină
                  setTabere(tabereFinale);
 
              } catch (error) {
@@ -104,7 +97,7 @@ function ComparePage(){
                                             >
                                                 ✖
                                             </button>
-                                            <img src={t.imagine || 'https://via.placeholder.com/150x100'} alt={t.nume} className="img-thumbnail mb-2" style={{ height: '100px', objectFit: 'cover' }} />
+                                            <img src={`/images/tabara_${t.id}.jpg`} onError={(e) => { e.target.src = '/images/default.jpg'; }} alt={t.nume} className="img-thumbnail mb-2" style={{ height: '100px', objectFit: 'cover' }} />
                                             <h5 className="text-primary mb-0">{t.nume}</h5>
                                         </th>
                                     ))}

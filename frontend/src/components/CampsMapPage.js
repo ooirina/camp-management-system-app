@@ -9,13 +9,13 @@ const CampsMapPage = () => {
     const [filtruLocatie, setFiltruLocatie] = useState(null);
 
      const [searchTerm, setSearchTerm]= useState("");
-    // preluare date din endpoint ul : /map/locatii
+
     useEffect(() => {
         axios.get('http://localhost:8080/map/locatii', { withCredentials: true })
             .then(res => {
-                // verificare daca datele vin bine
+
                 console.log("Date primite de la server:", res.data);
-                // Ne asigurăm că setăm un array, chiar dacă res.data e gol
+                //verificare setare un array, chiar dacă res.data e gol
                 setTabere(Array.isArray(res.data) ? res.data : []);
             })
             .catch(err => console.error("Eroare la incarcarea hartii:", err));
@@ -23,22 +23,21 @@ const CampsMapPage = () => {
 
 
     // filtrare bazata pe click ul de pe harta
-    // folosim Array.isArray pentru a preveni erorile daca serverul trimite date gresite
     const tabereDeFiltrat = Array.isArray(tabere) ? tabere : [];
 
       ///contine taberele care se potrivesc cautarii
       //aceasta lista va fi trimisa hartii pt ca pinii sa se ascunda live
      ///pinii dispar in functie de ce scriu la cautare
-     ///PAs1: Filtrare baza de date in functie de ce se scrie in bara de cautare
+     /// Filtrare baza de date in functie de ce se scrie in bara de cautare
            const filteredBySearch =tabereDeFiltrat.filter(camp=>
                      camp.locatie.toLowerCase().includes(searchTerm.toLowerCase())||
                      camp.nume.toLowerCase().includes(searchTerm.toLowerCase())
                      );
 
 
-    // Filtrăm pentru lista de carduri de jos, combinand cautarea cu filtrul de pe harta
-    //tine cont de casuta de cautare si de pinii apasati pe harta
-    //Pas 2:din ce a aramas la pas 1
+    // Filtrăm pentru lista de carduri de jos
+    //tine cont de casuta de cautare + de pinii apasati pe harta
+    //Pas 2:din ce a a ramas la pas 1
     const tabereFiltrateFinal = filtruLocatie
         ? filteredBySearch.filter(t => t.locatie === filtruLocatie)
         : filteredBySearch;
@@ -71,8 +70,8 @@ const CampsMapPage = () => {
 
             <div className="card shadow mb-4">
                 <div className="card-body p-0">
-                    {/* Trimitem taberele catre componenta harta */}
-                    {/* Trimitem filteredBySearch hărții ca pinii să se filtreze în timp ce scrii */}
+                    {/* Trimite taberele catre componenta harta */}
+                    {/* Trimite filteredBySearch hărții ca pinii să se filtreze în timp ce se scrie*/}
                       <InteractiveMap
                          camps={filteredBySearch}
                          onLocationSelect={(oras) => setFiltruLocatie(oras)}

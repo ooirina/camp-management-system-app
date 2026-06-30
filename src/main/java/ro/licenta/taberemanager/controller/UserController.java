@@ -88,15 +88,14 @@ public List<User> getUsers() {
     @DeleteMapping("/stergere/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
 
-        // 1. Verificare dacă userul are participanți (copii) înregistrați
+        //  Verificare dacă userul are participanți (copii) înregistrați
         boolean areParticipanti = !participantRepository.findByIdUser(id).isEmpty();
         if (areParticipanti) {
             return ResponseEntity.badRequest()
                     .body("Nu poți șterge acest utilizator! Are participanți (copii) înregistrați în sistem.");
         }
 
-        // 2. Verificare dacă userul are înscrieri ca platitor (s-a inscris el insusi)
-        // Nu se poate sterge daca are inscrieri active — orice statut diferit de ANULAT
+        //  Verificare dacă userul are înscrieri ca platitor
         boolean areInscrieri = inscriereRepository.findAll().stream()
                 .anyMatch(i -> id.equals(i.getIdPlatitor()) &&
                         !"ANULAT".equals(i.getStatut()));

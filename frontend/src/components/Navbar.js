@@ -34,7 +34,7 @@ useEffect(() => {
     const [hasNewAnnouncements, setHasNewAnnouncements] = useState(false);
     const activeCampId = localStorage.getItem('tabaraActivaId');
 
-// ruta catre profil in functie de rol
+
 let caleCatreProfil='/user-profile';
 if(userRole ==='2')
 caleCatreProfil='/coordonator-profile';
@@ -43,24 +43,21 @@ caleCatreProfil='/admin-profile';
 
 //verificare mesasje noi
 useEffect(()=>{
-   //daca nu este intr-o tabara (prezenta/selectata intr-o tabara din profil coordonator), nu se cauta mesaje
+
     if(!activeCampId)
     return;
 
     const checkUnreadMessages =async() =>{
        try{
-          ///aducere mesajele pentru tabara activa
+
           const response =await axios.get(`http://localhost:8080/anunturi-interne/tabara/${activeCampId}`);
           const messages= response.data;
 
           if(messages.length >0){
-          //luam ID ul celui mai recent mesaj (primul din lista)
                    const latestMessageId = messages[0].id;
-          //luam ID-ul ultimei vizite pe avizier din memorie
                     const lastSeenId =localStorage.getItem('lastSeenAnnouncementId');
 
-          //daca n-a intrat niciodata sau mesajul e mai nou decat ultima vizita
-                     if(!lastSeenId ||  latestMessageId >parseInt(lastSeenId)){
+                if(!lastSeenId ||  latestMessageId >parseInt(lastSeenId)){
                       setHasNewAnnouncements(true);
 
                     }else {
@@ -73,17 +70,18 @@ useEffect(()=>{
            }
 
        };
-       //ruleaza functia imediat cum se incarca Navbar ul
+
       checkUnreadMessages();
 
-      //setare un cronometru invizibil care verifică din nou la fiecare 10 secunde
+      //setare un cronometru invizibil
        const intervalId = setInterval(() => {
                    checkUnreadMessages();
-        }, 10000); // 10000 milisecunde = 10 secunde
+        }, 10000);
 
       return () => clearInterval(intervalId);
 
-}, [activeCampId, location.pathname]);// se ruleaza cand se incarca Navbar-ul sau se schimba tabara
+}, [activeCampId, location.pathname]);
+
 
 ///logica de logare
 const handleLogout=()=>{
@@ -92,15 +90,15 @@ const handleLogout=()=>{
   window.location.reload();
 };
 
-// helpers vizibiliate
+
  const esteAdmin = userRole === '1';
  const esteCoordinator = userRole === '2';
  const esteUser = userRole === '5';
 
 
- /// Poate accesa funcții de management (cazare, înscrieri, rapoarte)
+
   const areAccesManagement = esteAdmin || (esteCoordinator && estePrincipal);
-  // Rapoarte si Buget per-tabara — strict Coordonator Principal (date operationale/financiare locale)
+
   const areAccesRapoarteLocale = esteCoordinator && estePrincipal;
 
   return (

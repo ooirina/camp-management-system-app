@@ -25,12 +25,11 @@ public class BugetService {
     private final TabaraRepository tabaraRepository;
     private final EmailService emailService;
 
-    // Înregistrează o tranzacție de tip INCASARE atunci când plata Stripe a fost confirmata
+    // Înregistrează o tranzacție de tip INCASARE
     public void inregistreazaPlata(Long idInscriere, String stripeSessionId) {
         Inscriere inscriere = inscriereRepository.findById(idInscriere)
                 .orElseThrow(() -> new RuntimeException("Inscrierea nu exista: " + idInscriere));
 
-        // Deduplicare — nu inregistram de doua ori aceeasi sesiune Stripe
         boolean existaDeja = tranzactieRepository.findByIdInscriereOrderByDataTranzactieDesc(idInscriere)
                 .stream()
                 .anyMatch(t -> stripeSessionId != null && stripeSessionId.equals(t.getStripeSessionId()));
@@ -99,7 +98,7 @@ public class BugetService {
         emailService.sendSimpleEmail(emailPlatitor, subiect, mesaj.toString());
     }
 
-    // Bugetul complet al unei tabere — folosit in pagina de raportare a coordonatorului principal
+    // Bugetul complet al unei tabere
     public Map<String, Object> getBugetTabara(Long idTabara) {
         BigDecimal incasat = tranzactieRepository.getTotalIncasat(idTabara);
         BigDecimal rambursat = tranzactieRepository.getTotalRambursat(idTabara);

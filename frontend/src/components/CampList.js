@@ -7,13 +7,13 @@ function CampList() {
     const [listaCategorii, setListaCategorii] = useState([]);
     const navigate = useNavigate();
 
-    //de comparat maxim 3 — citit din localStorage, ca selecția să rămână și după ce te întorci de pe pagina de comparare
+
     const [tabereDeComparat, setTabereDeComparat] = useState(() => {
         const salvat = localStorage.getItem('tabereComparare');
         return salvat ? JSON.parse(salvat) : [];
     });
 
-    // Sincronizare automată cu localStorage la orice modificare a selecției (adăugare, scoatere, golire)
+
     useEffect(() => {
         localStorage.setItem('tabereComparare', JSON.stringify(tabereDeComparat));
     }, [tabereDeComparat]);
@@ -27,11 +27,11 @@ function CampList() {
     });
 
     useEffect(() => {
-        axios.get('http://localhost:8080/tabere/lista') // Ajustează URL-ul tău
+        axios.get('http://localhost:8080/tabere/lista')
             .then(res => setTabere(res.data))
             .catch(err => console.error(err));
 
-        // Aducem lista completă de categorii pentru filtru
+
         axios.get('http://localhost:8080/categorii')
               .then(res => setListaCategorii(res.data))
               .catch(err => console.error("Eroare la aducerea categoriilor:", err));
@@ -46,11 +46,11 @@ function CampList() {
     //Logia pentru selectare/deselectare tabere pentru comparare
     const toggleComparare = (tabara)=>{
        setTabereDeComparat(prev => {
-            //daca tabara e deja selectata
+
             if(prev.find(t => t.id === tabara.id)){
                 return prev.filter(t=> t.id !==tabara.id);
             }
-            // Daca avem deja 3 tabere, oprim adaugarea
+
             if(prev.length >= 3){
                alert("Poți compara maxim 3 tabere simultan!");
                return prev;
@@ -65,7 +65,7 @@ function CampList() {
       const matchLocatie = tabara.locatie.toLowerCase().includes(filtre.locatie.toLowerCase());
       const matchPret = filtre.pretMax ? tabara.pret <= parseFloat(filtre.pretMax) : true;
       const matchTipPublic = filtre.tipPublic ? tabara.tipPublic === filtre.tipPublic : true;
-   // Verificăm dacă tabăra are în lista ei de categorii categoria selectată
+
       const matchCategorie = filtre.categorie ? tabara.categorii?.some(c => c.tip === filtre.categorie) : true;
        return matchLocatie && matchPret && matchTipPublic && matchCategorie;
 
@@ -197,7 +197,7 @@ function CampList() {
                     {/* CARDURI TABERE*/}
                     <div className="row">
                         {tabereFiltrate.map(tabara => {
-                            //verifica daca tabara curenta e selectata
+
                             const esteSelectata = tabereDeComparat.some(t => t.id === tabara.id);
 
                             return (
@@ -253,7 +253,7 @@ function CampList() {
                     {tabereFiltrate.length === 0 && (
                         <div style={{ textAlign: 'center', padding: '60px 20px', color: '#9ca3af' }}>
                             <div style={{ fontSize: '3rem', marginBottom: '12px' }}>🔍</div>
-                            <h5 style={{ color: '#6b7280', fontWeight: '600' }}>Nu am găsit tabere care să corespundă filtrelor tale.</h5>
+                            <h5 style={{ color: '#6b7280', fontWeight: '600' }}>Nu s-au găsit tabere care să corespundă filtrelor tale.</h5>
                             <p style={{ fontSize: '0.9rem' }}>Încearcă să modifici filtrele pentru mai multe rezultate.</p>
                         </div>
                     )}

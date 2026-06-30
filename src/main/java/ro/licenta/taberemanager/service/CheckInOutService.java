@@ -33,10 +33,10 @@ public class CheckInOutService {
     public Optional<Inscriere> doCheckin(Long id) {
         return inscriereRepository.findById(id).map(ins -> {
             ins.setDataCheckin(LocalDateTime.now());
-            // status daca e sosit sau nu
+
             ins.setStatusSosire("SOSIT");
             inscriereRepository.save(ins);
-            // trimite email dinamic dupa actulaizare baza de date
+            // doar daca e minor
             checkInEmailService.sendEmailIfMinor(id);
             return ins;
         });
@@ -48,7 +48,7 @@ public class CheckInOutService {
             ins.setDataCheckout(LocalDateTime.now());
             ins.setStatusSosire("PLECAT");
             inscriereRepository.save(ins);
-            // Apelare servicu dedicat pentru email de plecare
+            //doar daca e minor
             checkOutEmailService.sendCheckoutEmailIfMinor(id);
             return ins;
         });
@@ -56,18 +56,18 @@ public class CheckInOutService {
 
     // Raport CSV
     public void genereazaRaportCSV(Long idTabara, HttpServletResponse response) throws IOException {
-        // Setare format fisier pentru descarcare
+
         response.setContentType("text/csv; charset=utf-8");
         response.setHeader("Content-Disposition", "attachment; filename=\"raport_tabara_" + idTabara + ".csv\"");
 
-        // Aducere doar participantii confirmati si platiti
+
         List<Inscriere> inscrieri = inscriereRepository.findByTabaraIdAndStatutAndStatusPlata(idTabara, "CONFIRMAT", "PLATIT");
         PrintWriter writer = response.getWriter();
-        // Adaugare BOM( Byte Order MArk) ca Excel sa citeasca corect diacriticile
+        // Citire corect diacriticile
         writer.write('\ufeff');
-        // Scriere capul de tabel (numele coloanelor, separate prin virgula)
+        // Scriere capul de tabel
         writer.println("Nume,Prenume,Gen,Telefon,Contact Urgenta,Alergii, Status Sosire");
-        // Parcurgere lista si scriere fiecare participant pe un rand nou
+        // scriere fiecare participant pe un rand nou
         for (Inscriere i : inscrieri) {
             String nume = i.getParticipant().getNume() != null ? i.getParticipant().getNume() : "-";
             String prenume = i.getParticipant().getPrenume() != null ? i.getParticipant().getPrenume() : "-";

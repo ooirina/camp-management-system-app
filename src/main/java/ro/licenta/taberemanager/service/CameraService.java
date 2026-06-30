@@ -18,24 +18,23 @@ public class CameraService {
     @Autowired
     private InscriereRepository inscriereRepository;
 
-    // 1. CRUD Clasic - Adaugare camera
+
     public Camera salveazaCamera(Camera camera) {
         return cameraRepository.save(camera);
     }
 
-    // 2. Lista de camere pentru o tabără (Include locatarii prin relatia @OneToMany)
     public List<Camera> getCamereTabara(Long idTabara) {
         return cameraRepository.findByTabaraId(idTabara);
     }
 
-    // 3. Participanții "nealocați" (id_camera IS NULL) pentru o tabara
+    // Participanții "nealocați" (id_camera null)
     public List<Inscriere> getNealocati(Long idTabara) {
         return inscriereRepository.findByTabaraIdAndCameraIsNull(idTabara).stream()
                 .filter(ins -> "CONFIRMAT".equals(ins.getStatut()) && "PLATIT".equals(ins.getStatusPlata()))
                 .toList();
     }
 
-    // 4. Logica de alocare: Muta un participant intr-o camera
+    // Logica de alocare
     public void alocaParticipant(Long idInscriere, Long idCamera) {
         Inscriere ins = inscriereRepository.findById(idInscriere).orElseThrow();
         Camera cam = cameraRepository.findById(idCamera).orElseThrow();
@@ -49,14 +48,14 @@ public class CameraService {
         inscriereRepository.save(ins);
     }
 
-    // 5. Stergere alocare (Scoate din camera)
+    // Stergere alocare (Scoate din camera)
     public void scoateDinCamera(Long idInscriere) {
         Inscriere ins = inscriereRepository.findById(idInscriere).orElseThrow();
         ins.setCamera(null);
         inscriereRepository.save(ins);
     }
 
-    // UPDATE camera
+
     public Camera updateCamera(Long id, Camera cameraDetails) {
         Camera cam = cameraRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Camera nu exista"));
@@ -69,7 +68,7 @@ public class CameraService {
     // 6. Stergere camera
     public void stergeCamera(Long id) {
         Camera cam = cameraRepository.findById(id).orElseThrow();
-        // Inainte de stergere, "evacuam" toti locatarii
+        // integritate referentiala- Inainte de stergere, se scot toti locatarii din camera
         for (Inscriere ins : cam.getLocatari()) {
             ins.setCamera(null);
             inscriereRepository.save(ins);
